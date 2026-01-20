@@ -1,0 +1,49 @@
+:root {
+  --primary: #0b3c5d;
+  --secondary: #1e7f60;
+  --danger: #d32f2f;
+  --warning: #f9a825;
+  --success: #2e7d32;
+  --background: #f4f6f9;
+  --card-bg: #ffffff;
+  --text-dark: #333;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: var(--background);
+}
+
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+
+  .info-grid {
+    padding: 20px;
+  }
+
+  .advisor-section {
+    width: 95%;
+  }
+
+  .dashboard-card {
+    width: 95%;
+  }
+
+  .login-card {
+    width: 90%;
+  }
+
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
