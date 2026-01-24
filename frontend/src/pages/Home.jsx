@@ -25,6 +25,8 @@ const Home = () => {
           </button>
         </div>
       </div>
+
+      
       <div className="home-features">
         <h2>Why Choose Our System?</h2>
         <div className="features-grid">
