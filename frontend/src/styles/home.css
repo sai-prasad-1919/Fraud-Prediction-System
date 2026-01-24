@@ -51,3 +51,301 @@
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
+
+
+/* =========================
+   FEATURES SECTION
+========================= */
+.home-features {
+  padding: 40px 10%;
+  background: #f7f9fc;
+  text-align: center;
+}
+
+.home-features h2 {
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  color: #0a1f44;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.feature-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+}
+
+.feature-card h3 {
+  color: #0a1f44;
+  margin-bottom: 15px;
+}
+
+.feature-card p {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* =========================
+   CAPABILITIES
+========================= */
+.home-capabilities {
+  padding: 80px 12%;
+  background: #ffffff;
+}
+
+.home-capabilities h2 {
+  text-align: center;
+  font-size: 2.1rem;
+  margin-bottom: 40px;
+  color: #0a1f44;
+}
+
+.cap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.cap-card {
+  background: #f8fafd;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease;
+}
+
+.cap-card:hover {
+  transform: translateY(-6px);
+}
+
+.cap-card h3 {
+  color: #0a1f44;
+  margin-bottom: 12px;
+}
+
+.cap-card p {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* =========================
+   USERS SECTION
+========================= */
+.home-users {
+  padding:20px 12%;
+  background: #f5f7fb;
+}
+
+.home-users h2 {
+  text-align: center;
+  font-size: 2.1rem;
+  margin-bottom: 35px;
+  color: #0a1f44;
+}
+
+.user-box {
+  max-width: 750px;
+  margin: auto;
+  background: #ffffff;
+  padding: 35px 40px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.user-box p {
+  margin-bottom: 18px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #333;
+}
+
+/* =========================
+   OBJECTIVE
+========================= */
+.home-objective {
+  padding: 40px 12%;
+  background: #f5f7fb;
+  text-align: center;
+}
+
+.home-objective h2 {
+  font-size: 2.1rem;
+  margin-bottom: 20px;
+  color: #0a1f44;
+}
+
+.home-objective p {
+  max-width: 750px;
+  margin: auto;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* =========================
+   DISCLAIMER
+========================= */
+.home-disclaimer {
+  padding: 25px 12%;
+  background: #fff3cd;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #856404;
+  border-top: 1px solid #ffeeba;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .home-capabilities,
+  .home-users,
+  .home-tech,
+  .home-objective {
+    padding: 50px 6%;
+  }
+
+  .user-box,
+  .home-tech ul {
+    padding: 25px;
+  }
+}
+
+
+/* =========================
+   HOW IT WORKS (boxed & clean)
+========================= */
+.home-how {
+  padding: 40px 12%;
+  background: #f5f7fb;
+}
+
+.home-how h2 {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  color: #0a1f44;
+  letter-spacing: 0.5px;
+}
+
+/* main box */
+.home-how ol {
+  max-width: 750px;
+  margin: auto;
+  padding: 40px 50px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  counter-reset: step;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.9;
+}
+
+/* each step */
+.home-how li {
+  position: relative;
+  margin-bottom: 22px;
+  padding-left: 55px;
+}
+
+/* step number circle */
+.home-how li::before {
+  content: counter(step);
+  counter-increment: step;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 34px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 15px rgba(10, 31, 68, 0.25);
+}
+
+/* divider line except last */
+.home-how li:not(:last-child) {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e6eaf0;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .home-how {
+    padding: 50px 6%;
+  }
+
+  .home-how ol {
+    padding: 25px 20px;
+  }
+
+  .home-how li {
+    padding-left: 48px;
+  }
+}
+
+
+
+/* =========================
+   AWARENESS SECTION
+========================= */
+.home-awareness {
+  padding: 70px 12%;
+  background: #0a1f44;
+  color: white;
+  text-align: center;
+}
+
+.home-awareness h2 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+.home-awareness ul {
+  list-style: none;
+  max-width: 600px;
+  margin: auto;
+  padding: 0;
+}
+
+.home-awareness li {
+  margin: 12px 0;
+  font-size: 1rem;
+  position: relative;
+}
+
+.home-awareness li::before {
+  content: "✔";
+  color: #4cd964;
+  margin-right: 8px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .home-features,
+  .home-how,
+  .home-awareness {
+    padding: 50px 6%;
+  }
+}
