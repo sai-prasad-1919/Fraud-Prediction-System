@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { adminLogin } from "../api/adminAuth";
 import "../styles/login.css";
 
 const Login = () => {
@@ -17,14 +18,16 @@ const Login = () => {
       return;
     }
 
-    // Demo credentials
-    if (adminId === "admin" && password === "Password@123") {
-      localStorage.setItem("isAdminLoggedIn", "true");
-      setError("");
-      navigate("/dashboard", { replace: true });
-    } else {
-      setError("Invalid credentials. Access denied.");
-    }
+    adminLogin(adminId, password)
+      .then((res) => {
+        localStorage.setItem("admin_token", res.data.access_token);
+        localStorage.setItem("isAdminLoggedIn", "true");
+        localStorage.setItem("adminId", adminId); // Store adminId for case creation
+        navigate("/dashboard");
+      })
+      .catch(() => {
+        setError("Invalid credentials");
+      });
   };
 
   return (
@@ -57,10 +60,6 @@ const Login = () => {
           <button className="login-btn" type="submit">
             Login
           </button>
-
-          <p style={{ textAlign: "center", fontSize: "12px", marginTop: "10px", color: "#666" }}>
-            Demo: <b>admin / Password@123</b>
-          </p>
         </form>
       </div>
     </>

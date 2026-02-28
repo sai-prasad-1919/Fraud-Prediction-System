@@ -1,86 +1,738 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Spinner from "../components/Spinner";
+import api from "../api/client";
 import "../styles/dashboard.css";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
+  // Individual Search
   const [userId, setUserId] = useState("");
   const [risk, setRisk] = useState(null);
 
-  // 🔐 HARD SECURITY CHECK (VERY IMPORTANT)
+  // Range Search
+  const [startUserId, setStartUserId] = useState("");
+  const [endUserId, setEndUserId] = useState("");
+  const [rangeResults, setRangeResults] = useState([]);
+  const [filteredResults, setFilteredResults] = useState([]);
+
+  // UI State
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("individual"); // "individual" or "range"
+  const [sortBy, setSortBy] = useState("risk_level"); // "risk_level", "user_id"
+
+  // Transaction Modal
+  const [showModal, setShowModal] = useState(false);
+  const [modalTransactions, setModalTransactions] = useState([]);
+  const [modalTitle, setModalTitle] = useState("");
+
+  // 🚨 Action Modal for Fraud Case
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionCaseData, setActionCaseData] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // 🔐 HARD SECURITY CHECK
   useEffect(() => {
     const isAuth = localStorage.getItem("isAdminLoggedIn");
-
     if (isAuth !== "true") {
       navigate("/login", { replace: true });
     }
   }, [navigate]);
 
-  const predict = () => {
-    if (!userId) return alert("Enter User ID");
+  // ============ INDIVIDUAL USER PREDICTION ============
+  const predict = async () => {
+    if (!userId) return alert("Enter User ID number");
 
-    setRisk({
-      score: 82,
-      level: "Level 3",
-      action: "Debit Freeze & Cyber Cell Escalation",
+    let userIdNum = userId.toString().trim();
+    if (userIdNum.startsWith("USER") || userIdNum.startsWith("user")) {
+      userIdNum = userIdNum.slice(4);
+    }
+
+    if (isNaN(userIdNum) || userIdNum === "") {
+      setError("Invalid User ID. Enter a number like 1, 2141, etc.");
+      return;
+    }
+
+    const userIdFormatted = `USER${userIdNum.padStart(4, "0")}`;
+    setLoading(true);
+    setError("");
+    setRisk(null);
+
+    try {
+      console.log("Individual prediction for:", userIdFormatted);
+      const response = await api.post("/admin/predict", {
+        start_user_id: userIdFormatted,
+        end_user_id: userIdFormatted,
+      });
+
+      const predictions = response.data;
+
+      if (Object.keys(predictions).length === 0) {
+        setRisk({
+          score: 0,
+          level: "No Risk",
+          action: "All transactions are fine for this user",
+          txnCount: 0,
+          isGenuine: true,
+        });
+        setLoading(false);
+        return;
+      }
+
+      let riskLevel = null;
+      let riskData = null;
+
+      if (predictions.level_3 && predictions.level_3.length > 0) {
+        riskLevel = 3;
+        riskData = predictions.level_3[0];
+      } else if (predictions.level_2 && predictions.level_2.length > 0) {
+        riskLevel = 2;
+        riskData = predictions.level_2[0];
+      } else if (predictions.level_1 && predictions.level_1.length > 0) {
+        riskLevel = 1;
+        riskData = predictions.level_1[0];
+      }
+
+      if (!riskData) {
+        setError("Unable to compute risk score");
+        setLoading(false);
+        return;
+      }
+
+      const riskActions = {
+        1: "KYC Review Required",
+        2: "Debit Freeze & Cyber Cell Escalation",
+        3: "Full Account Freeze & Immediate Investigation",
+      };
+
+      setRisk({
+        score: riskData.risk_pct,
+        level: `Level ${riskLevel}`,
+        action: riskActions[riskLevel],
+        txnCount: riskData.window_txn_count,
+        transactions: riskData.sample_transactions || [],
+        riskLevelNum: riskLevel,
+      });
+    } catch (err) {
+      console.error("Prediction error:", err);
+      let errorMsg = err.response?.data?.detail || "Error fetching prediction";
+      if (typeof errorMsg !== "string") {
+        errorMsg = JSON.stringify(errorMsg);
+      }
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ============ RANGE USER PREDICTION ============
+  const predictRange = async () => {
+    if (!startUserId || !endUserId) return alert("Enter both start and end User IDs");
+
+    let startNum = parseInt(startUserId.toString().trim());
+    let endNum = parseInt(endUserId.toString().trim());
+
+    if (isNaN(startNum) || isNaN(endNum)) {
+      setError("Both IDs must be valid numbers");
+      return;
+    }
+
+    if (startNum > endNum) {
+      setError("Start ID cannot be greater than End ID");
+      return;
+    }
+
+    if (endNum - startNum > 5000) {
+      setError("Range too large. Maximum 5000 users at a time");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setRangeResults([]);
+    setFilteredResults([]);
+
+    try {
+      const startFormatted = `USER${startNum.toString().padStart(4, "0")}`;
+      const endFormatted = `USER${endNum.toString().padStart(4, "0")}`;
+
+      console.log(`Range prediction: ${startFormatted} to ${endFormatted}`);
+      const response = await api.post("/admin/predict", {
+        start_user_id: startFormatted,
+        end_user_id: endFormatted,
+      });
+
+      const predictions = response.data;
+      
+      // Flatten all risky users into one array
+      const allRiskyUsers = [];
+      const riskLevelMap = { level_1: 1, level_2: 2, level_3: 3 };
+
+      for (const [levelKey, users] of Object.entries(predictions)) {
+        if (users && Array.isArray(users)) {
+          const level = riskLevelMap[levelKey] || 0;
+          allRiskyUsers.push(
+            ...users.map((user) => ({
+              ...user,
+              risk_level: level,
+              risk_level_name: {
+                1: "Level 1 - KYC Review",
+                2: "Level 2 - Debit Freeze",
+                3: "Level 3 - Full Freeze",
+              }[level],
+            }))
+          );
+        }
+      }
+
+      setRangeResults(allRiskyUsers);
+      setFilteredResults(allRiskyUsers);
+
+      if (allRiskyUsers.length === 0) {
+        setError(`No fraud risk found for users ${startNum} to ${endNum}`);
+      }
+    } catch (err) {
+      console.error("Range prediction error:", err);
+      let errorMsg = err.response?.data?.detail || "Error fetching predictions";
+      if (typeof errorMsg !== "string") {
+        errorMsg = JSON.stringify(errorMsg);
+      }
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ============ FILTERING & SORTING ============
+  useEffect(() => {
+    let results = [...rangeResults];
+
+    // Sort
+    results.sort((a, b) => {
+      if (sortBy === "risk_level") {
+        return b.risk_level - a.risk_level; // Highest level first
+      } else if (sortBy === "user_id") {
+        return a.user_id.localeCompare(b.user_id); // Alphabetical
+      }
+      return 0;
     });
+
+    setFilteredResults(results);
+  }, [sortBy, rangeResults]);
+
+  // ============ MODAL HANDLERS ============
+  const handleViewTransactions = (transactions, title) => {
+    setModalTransactions(transactions || []);
+    setModalTitle(title);
+    setShowModal(true);
+  };
+
+  // ============ TAKE ACTION FOR FRAUD CASE ============
+  const handleTakeAction = (caseData) => {
+    setActionCaseData(caseData);
+    setShowActionModal(true);
+  };
+
+  const createCaseFromAction = async () => {
+    if (!actionCaseData) return;
+
+    const adminId = localStorage.getItem("adminId");
+    if (!adminId) {
+      alert("Admin ID not found. Please login again.");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const payload = {
+        user_id: actionCaseData.user_id,
+        risk_level: actionCaseData.risk_level,
+        admin_id: adminId,
+      };
+
+      console.log("Creating fraud case:", payload);
+      const response = await api.post("/admin/cases/create", payload);
+
+      if (response.status === 200) {
+        alert(`✓ Fraud case #${response.data.case_id} created successfully for ${actionCaseData.user_id}`);
+        setShowActionModal(false);
+        setActionCaseData(null);
+        // Clear the prediction
+        setRisk(null);
+        setUserId("");
+      }
+    } catch (err) {
+      console.error("Error creating case:", err);
+      const errorMsg = err.response?.data?.detail || "Failed to create case";
+      alert(`Error: ${errorMsg}`);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
     <>
       <Navbar isAdmin={true} />
+      {loading && <Spinner message="Fetching fraud predictions..." />}
 
       <div style={styles.container}>
-        <div style={styles.card}>
-          <h2>Risk Prediction</h2>
-
-          <input
-            style={styles.input}
-            placeholder="Enter User ID"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-          />
-
-          <button style={styles.button} onClick={predict}>
-            Predict Risk
+        {/* TABS */}
+        <div style={styles.tabContainer}>
+          <button
+            style={{
+              ...styles.tab,
+              backgroundColor: activeTab === "individual" ? "#0b3c5d" : "#e0e0e0",
+              color: activeTab === "individual" ? "white" : "black",
+            }}
+            onClick={() => {
+              setActiveTab("individual");
+              setError("");
+              setRisk(null);
+            }}
+          >
+            Individual Search
           </button>
-
-          {risk && (
-            <div style={styles.result}>
-              <p><b>Risk Score:</b> {risk.score}/100</p>
-              <p><b>Risk Level:</b> {risk.level}</p>
-              <p><b>Recommended Action:</b></p>
-              <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
-                {risk.action}
-              </p>
-            </div>
-          )}
+          <button
+            style={{
+              ...styles.tab,
+              backgroundColor: activeTab === "range" ? "#0b3c5d" : "#e0e0e0",
+              color: activeTab === "range" ? "white" : "black",
+            }}
+            onClick={() => {
+              setActiveTab("range");
+              setError("");
+              setRangeResults([]);
+              setFilteredResults([]);
+            }}
+          >
+            Range Search (Bulk Check)
+          </button>
         </div>
+
+        {/* ============ INDIVIDUAL SEARCH ============ */}
+        {activeTab === "individual" && (
+          <div style={styles.card}>
+            <h2>Individual User Risk Check</h2>
+
+            <input
+              style={styles.input}
+              type="number"
+              placeholder="Enter User ID (e.g., 1, 100, 2141)"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+            />
+
+            <button style={{ ...styles.button, opacity: loading ? 0.6 : 1 }} onClick={predict} disabled={loading}>
+              {loading ? "Checking..." : "Check Risk"}
+            </button>
+
+            {error && (
+              <div style={{ ...styles.result, backgroundColor: "#ffebee" }}>
+                <p style={{ color: "#d32f2f" }}>
+                  <b>Error:</b> {String(error)}
+                </p>
+              </div>
+            )}
+
+            {risk && (
+              <div style={{ ...styles.result, backgroundColor: risk.isGenuine ? "#e8f5e9" : "#fafafa" }}>
+                {risk.isGenuine ? (
+                  <>
+                    <p style={{ color: "#2e7d32", fontSize: "18px", fontWeight: "bold" }}>✓ All Transactions Are Genuine</p>
+                    <p style={{ color: "#2e7d32" }}>No fraud risk detected for this user. All transactions appear safe.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      <b>Risk Level:</b> {risk.level}
+                    </p>
+                    <p>
+                      <b>Transactions Analyzed:</b> {risk.txnCount}
+                    </p>
+                    <p>
+                      <b>Recommended Action:</b>
+                    </p>
+                    <p style={{ color: "#d32f2f", fontWeight: "bold" }}>{risk.action}</p>
+                    
+                    <div style={styles.buttonRow}>
+                      <button
+                        style={styles.secondaryBtn}
+                        onClick={() => handleViewTransactions(risk.transactions, `Transactions for USER${userId.padStart(4, "0")}`)}
+                      >
+                        📋 View Transactions
+                      </button>
+                      <button
+                        style={styles.actionBtn}
+                        onClick={() =>
+                          handleTakeAction({
+                            user_id: `USER${userId.padStart(4, "0")}`,
+                            risk_level: risk.riskLevelNum,
+                          })
+                        }
+                      >
+                        ⚡ Take Action
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============ RANGE SEARCH ============ */}
+        {activeTab === "range" && (
+          <div style={styles.card}>
+            <h2>Bulk Risk Check (User Range)</h2>
+
+            <div style={styles.inputRow}>
+              <div>
+                <label style={styles.label}>From User ID</label>
+                <input
+                  style={styles.input}
+                  type="number"
+                  placeholder="e.g., 1"
+                  value={startUserId}
+                  onChange={(e) => setStartUserId(e.target.value)}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>To User ID</label>
+                <input
+                  style={styles.input}
+                  type="number"
+                  placeholder="e.g., 100"
+                  value={endUserId}
+                  onChange={(e) => setEndUserId(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              style={{ ...styles.button, opacity: loading ? 0.6 : 1 }}
+              onClick={predictRange}
+              disabled={loading}
+            >
+              {loading ? "Scanning..." : "Scan for Fraud"}
+            </button>
+
+            {error && (
+              <div style={{ ...styles.result, backgroundColor: "#ffebee" }}>
+                <p style={{ color: "#d32f2f" }}>
+                  <b>No Risky Accounts Found:</b> {String(error)}
+                </p>
+              </div>
+            )}
+
+            {/* Results Table */}
+            {filteredResults.length > 0 && (
+              <div style={styles.resultsSection}>
+                <div style={styles.resultHeader}>
+                  <h3>Risky Accounts Found: {filteredResults.length}</h3>
+                  <div style={styles.sortContainer}>
+                    <label>Sort by:</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      style={styles.sortSelect}
+                    >
+                      <option value="risk_level">Risk Level (High to Low)</option>
+                      <option value="user_id">User ID (A to Z)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <table style={styles.table}>
+                  <thead>
+                    <tr style={styles.tableHeader}>
+                      <th style={styles.th}>User ID</th>
+                      <th style={styles.th}>Risk Level</th>
+                      <th style={styles.th}>Txns Analyzed</th>
+                      <th style={styles.th}>Recommended Action</th>
+                      <th style={styles.th}>View Txns</th>
+                      <th style={styles.th}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredResults.map((user, idx) => (
+                      <tr key={idx} style={styles.tableRow}>
+                        <td style={styles.td}>{user.user_id}</td>
+                        <td style={styles.td}>
+                          <span style={getRiskLevelColor(user.risk_level)}>{user.risk_level_name}</span>
+                        </td>
+                        <td style={styles.td}>{user.window_txn_count}</td>
+                        <td style={{ ...styles.td, fontSize: "12px" }}>
+                          {user.risk_level === 1 && "KYC Review Required"}
+                          {user.risk_level === 2 && "Debit Freeze & Cyber Cell"}
+                          {user.risk_level === 3 && "Full Account Freeze"}
+                        </td>
+                        <td style={styles.td}>
+                          <button
+                            style={styles.smallBtn}
+                            onClick={() => handleViewTransactions(user.sample_transactions, `Transactions for ${user.user_id}`)}
+                          >
+                            📋
+                          </button>
+                        </td>
+                        <td style={styles.td}>
+                          <button
+                            style={styles.actionBtn}
+                            onClick={() =>
+                              handleTakeAction({
+                                user_id: user.user_id,
+                                risk_level: user.risk_level,
+                              })
+                            }
+                          >
+                            ⚡
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* ============ TRANSACTION MODAL ============ */}
+      {showModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h3>{modalTitle}</h3>
+              <button
+                style={styles.closeBtn}
+                onClick={() => setShowModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {modalTransactions && modalTransactions.length > 0 ? (
+              <div style={styles.transactionsList}>
+                {modalTransactions.map((txn, idx) => {
+                  const txnDate = txn.transaction_datetime ? new Date(txn.transaction_datetime) : null;
+                  const txnTime = txnDate ? txnDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "N/A";
+                  const txnTimeHour = txnDate ? txnDate.getHours() : null;
+                  const isSuspiciousTime = txnTimeHour !== null && (txnTimeHour < 6 || txnTimeHour > 22);
+
+                  return (
+                    <div key={idx} style={styles.transactionCard}>
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>Transaction ID:</span>
+                        <span style={{ fontWeight: "bold", color: "#0b3c5d" }}>{txn.transaction_id || txn.id || "N/A"}</span>
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>Date & Time:</span>
+                        <span>
+                          {txnDate ? txnDate.toLocaleDateString("en-IN") : "N/A"} {txnTime}
+                          {isSuspiciousTime && <span style={{ color: "#d32f2f", fontWeight: "bold", marginLeft: "8px" }}>⚠️ Suspicious Time</span>}
+                        </span>
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>Amount:</span>
+                        <span style={{ fontWeight: "bold", color: "#d32f2f" }}>₹ {txn.amount?.toFixed(2) || "N/A"}</span>
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>Type:</span>
+                        <span style={{ 
+                          fontWeight: "bold", 
+                          color: "#0b3c5d",
+                          backgroundColor: "#e3f2fd",
+                          padding: "4px 8px",
+                          borderRadius: "4px"
+                        }}>
+                          {txn.payment_type || "N/A"}
+                        </span>
+                        {txn.transaction_type && (
+                          <span style={{ 
+                            fontWeight: "bold", 
+                            marginLeft: "8px",
+                            color: txn.transaction_type === "CREDIT" ? "#2e7d32" : "#d32f2f",
+                            backgroundColor: txn.transaction_type === "CREDIT" ? "#e8f5e9" : "#ffebee",
+                            padding: "4px 8px",
+                            borderRadius: "4px"
+                          }}>
+                            ({txn.transaction_type})
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>From:</span>
+                        <span style={{ color: "#0b3c5d", fontWeight: "500" }}>
+                          {txn.user_bank || "User Bank"} • {txn.location_city || "City"}, {txn.location_state || "State"}
+                        </span>
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>To:</span>
+                        <span style={{ color: "#0b3c5d", fontWeight: "500" }}>
+                          {txn.counterparty_bank || "Recipient Bank"} • 
+                          <span style={{ fontFamily: "monospace", color: "#666", marginLeft: "4px" }}>
+                            {txn.counterparty_account || "Account"}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div style={styles.txnRow}>
+                        <span style={styles.txnLabel}>Beneficiary:</span>
+                        <span style={{
+                          fontWeight: "bold",
+                          color: txn.is_beneficiary ? "#2e7d32" : "#ff9800",
+                          backgroundColor: txn.is_beneficiary ? "#e8f5e9" : "#fff3e0",
+                          padding: "4px 8px",
+                          borderRadius: "4px"
+                        }}>
+                          {txn.is_beneficiary ? "✓ Known Beneficiary" : "⚠️ Non-Beneficiary"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", color: "#999", padding: "20px" }}>No transactions available</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============ ACTION MODAL (Take Action) ============ */}
+      {showActionModal && actionCaseData && (
+        <div style={styles.modalOverlay} onClick={() => !actionLoading && setShowActionModal(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h3>🚨 Create Fraud Case</h3>
+              <button
+                style={styles.closeBtn}
+                onClick={() => !actionLoading && setShowActionModal(false)}
+                disabled={actionLoading}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ padding: "20px" }}>
+              <p style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "15px" }}>
+                Confirm Case Details
+              </p>
+
+              <div style={{ backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "8px", marginBottom: "20px" }}>
+                <p>
+                  <b>User ID:</b> {actionCaseData.user_id}
+                </p>
+                <p>
+                  <b>Risk Level:</b> Level {actionCaseData.risk_level}
+                </p>
+                <p>
+                  <b>Action Required:</b>
+                  {actionCaseData.risk_level === 1 && " KYC Review Required"}
+                  {actionCaseData.risk_level === 2 && " Debit Freeze & Cyber Cell Escalation"}
+                  {actionCaseData.risk_level === 3 && " Full Account Freeze & Immediate Investigation"}
+                </p>
+              </div>
+
+              <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+                📝 This case will be added to the Fraud Cases list where you can mark it as "Under Investigation" and then
+                "Resolved" with a reason.
+              </p>
+
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                <button
+                  style={{
+                    ...styles.secondaryBtn,
+                    opacity: actionLoading ? 0.6 : 1,
+                  }}
+                  onClick={() => !actionLoading && setShowActionModal(false)}
+                  disabled={actionLoading}
+                >
+                  ✕ Cancel
+                </button>
+                <button
+                  style={{
+                    ...styles.button,
+                    backgroundColor: "#d32f2f",
+                    opacity: actionLoading ? 0.6 : 1,
+                  }}
+                  onClick={createCaseFromAction}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? "Creating..." : "✓ Create Case"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
+};
+
+// Helper function for risk level color
+const getRiskLevelColor = (level) => {
+  const colors = {
+    1: { backgroundColor: "#fff3e0", color: "#e65100", padding: "4px 8px", borderRadius: "4px" },
+    2: { backgroundColor: "#ffe0b2", color: "#e65100", padding: "4px 8px", borderRadius: "4px" },
+    3: { backgroundColor: "#ffccbc", color: "#d84315", padding: "4px 8px", borderRadius: "4px", fontWeight: "bold" },
+  };
+  return colors[level] || {};
 };
 
 const styles = {
   container: {
     backgroundColor: "#f4f6f9",
     minHeight: "100vh",
-    padding: "40px",
+    padding: "40px 20px",
+  },
+  tabContainer: {
+    display: "flex",
+    gap: "10px",
+    maxWidth: "1000px",
+    margin: "0 auto 20px",
+  },
+  tab: {
+    flex: 1,
+    padding: "12px 20px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "bold",
+    transition: "all 0.3s ease",
   },
   card: {
-    maxWidth: "500px",
+    maxWidth: "1000px",
     margin: "auto",
     backgroundColor: "white",
     padding: "30px",
     borderRadius: "12px",
     boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
   },
+  inputRow: {
+    display: "flex",
+    gap: "20px",
+    marginBottom: "20px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "8px",
+    fontWeight: "bold",
+    color: "#333",
+  },
   input: {
     width: "100%",
     padding: "12px",
-    margin: "15px 0",
+    marginBottom: "15px",
     borderRadius: "6px",
     border: "1px solid #ccc",
   },
@@ -92,12 +744,154 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
+    fontWeight: "bold",
   },
   result: {
     marginTop: "20px",
     padding: "15px",
     backgroundColor: "#fafafa",
     borderRadius: "8px",
+  },
+  resultsSection: {
+    marginTop: "30px",
+  },
+  resultHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+    paddingBottom: "10px",
+    borderBottom: "2px solid #0b3c5d",
+  },
+  sortContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  sortSelect: {
+    padding: "8px 12px",
+    border: "1px solid #0b3c5d",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "white",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+  },
+  tableHeader: {
+    backgroundColor: "#0b3c5d",
+    color: "white",
+  },
+  th: {
+    padding: "12px",
+    textAlign: "left",
+    fontWeight: "bold",
+  },
+  tableRow: {
+    borderBottom: "1px solid #e0e0e0",
+    "&:hover": { backgroundColor: "#f9f9f9" },
+  },
+  td: {
+    padding: "12px",
+    textAlign: "left",
+  },
+  actionBtn: {
+    padding: "6px 12px",
+    backgroundColor: "#0b3c5d",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "bold",
+  },
+  buttonRow: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "20px",
+  },
+  secondaryBtn: {
+    flex: 1,
+    padding: "10px 15px",
+    backgroundColor: "#1976d2",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "bold",
+    transition: "background-color 0.3s",
+  },
+  smallBtn: {
+    padding: "4px 8px",
+    backgroundColor: "#1976d2",
+    color: "white",
+    border: "none",
+    borderRadius: "3px",
+    cursor: "pointer",
+    fontSize: "11px",
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "30px",
+    maxWidth: "600px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+    borderBottom: "2px solid #0b3c5d",
+    paddingBottom: "15px",
+  },
+  closeBtn: {
+    backgroundColor: "transparent",
+    border: "none",
+    fontSize: "24px",
+    cursor: "pointer",
+    color: "#999",
+  },
+  transactionsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  transactionCard: {
+    backgroundColor: "#f9f9f9",
+    padding: "15px",
+    borderRadius: "8px",
+    border: "1px solid #e0e0e0",
+  },
+  txnRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "8px",
+    fontSize: "14px",
+  },
+  txnLabel: {
+    fontWeight: "bold",
+    color: "#0b3c5d",
+    minWidth: "120px",
   },
 };
 
