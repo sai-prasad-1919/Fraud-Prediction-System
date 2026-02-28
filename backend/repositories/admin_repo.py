@@ -9,3 +9,7 @@ def create_admin(admin_data: dict):
 
 def get_admin_by_email(email: str):
     return admin_collection.find_one({"email": email})
+
+
+def get_admin_by_id(admin_id: str):
+    return admin_collection.find_one({"admin_id": admin_id})

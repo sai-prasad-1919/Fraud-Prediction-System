@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Advisor from "./pages/Advisor";
+import FraudCases from "./pages/FraudCases";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -21,6 +22,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/fraud-cases"
+          element={
+            <ProtectedRoute>
+              <FraudCases />
             </ProtectedRoute>
           }
         />

@@ -7,6 +7,8 @@ const Navbar = ({ isAdmin }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("adminId");
+    localStorage.removeItem("admin_token");
     navigate("/login", { replace: true });
   };
 
@@ -19,6 +21,17 @@ const Navbar = ({ isAdmin }) => {
       <button className="nav-btn" onClick={() => navigate("/advisor")}>
         Customer Advisor
       </button>
+
+      {isAdmin && (
+        <>
+          <button className="nav-btn" onClick={() => navigate("/dashboard")}>
+            📊 Dashboard
+          </button>
+          <button className="nav-btn" onClick={() => navigate("/fraud-cases")}>
+            🚨 Fraud Cases
+          </button>
+        </>
+      )}
 
       {isAdmin && (
         <button className="logout-btn" onClick={handleLogout}>

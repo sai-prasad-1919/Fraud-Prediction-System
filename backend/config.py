@@ -10,4 +10,9 @@ class Settings:
     SQL_DB_URL = os.getenv("SQL_DB_URL")
     MONGO_URL = os.getenv("MONGO_URL")
     
+    # ML Configuration
+    # Number of previous transactions to use for fraud prediction window
+    # Can be 7, 8, 10 or any number you prefer
+    ML_WINDOW_SIZE = int(os.getenv("ML_WINDOW_SIZE", "7"))
+    
 settings = Settings()
