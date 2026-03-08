@@ -44,9 +44,6 @@ def compute_features(window_df: pd.DataFrame) -> dict | None:
 
     upi_txns = df[df["payment_type"] == "UPI"]
 
-    # -------- Merchant transaction features --------
-    merchant_txns = df[df["is_merchant"] == True] if "is_merchant" in df.columns else pd.DataFrame()
-
     # -------- Feature dictionary --------
     features = {
         "txn_count_7d": txn_count,
@@ -62,7 +59,6 @@ def compute_features(window_df: pd.DataFrame) -> dict | None:
         "unique_counterparties": unique_counterparties,
         "digital_bank_ratio": safe_divide(len(digital_bank_txns), txn_count),
         "upi_ratio": safe_divide(len(upi_txns), txn_count),
-        "merchant_txn_ratio": safe_divide(len(merchant_txns), txn_count),
     }
 
     return features

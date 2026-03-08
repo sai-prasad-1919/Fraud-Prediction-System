@@ -66,8 +66,11 @@ Server runs at `http://localhost:8000`
 - `GET /admin/predict-test` - Test prediction endpoint
 
 ### Case Management
-- `POST /admin/case/open` - Open fraud investigation case
-- `POST /admin/case/resolve` - Resolve fraud case
+- `POST /admin/cases/create` - Create a fraud case for a user
+- `PUT /admin/cases/{case_id}/investigate` - Mark case as Under Investigation
+- `PUT /admin/cases/{case_id}/resolve` - Resolve a fraud case with reason
+- `GET /admin/cases/list/open` - List all open and under-investigation cases
+- `GET /admin/cases/history/{user_id}` - Get case history for a specific user
 
 ## Documentation
 
@@ -109,10 +112,8 @@ APP_ENV=development
 ### Database Setup
 
 **PostgreSQL Tables:**
-- `transactions` - Transaction records (20,000 sample records)
-- `fraud_cases` - Fraud investigation cases
-- `resolved_transactions` - Transactions linked to fraud cases
-- `admin_audit_logs` - Admin action audit trail
+- `transactions` - Transaction records (20,000 sample records), includes `fraud_case_id` and `is_resolved` columns for efficient case tracking
+- `fraud_cases` - Fraud investigation cases with full audit trail
 
 **MongoDB Collections:**
 - `admins` - Admin account credentials
