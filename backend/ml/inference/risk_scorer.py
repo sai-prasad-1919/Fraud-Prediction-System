@@ -62,23 +62,15 @@ class RiskScorer:
         risk_prob = float(self.model.predict_proba(X)[0][1])
         risk_pct = round(risk_prob * 100, 2)
 
-        # Check if the last transaction is to a known beneficiary or merchant
+        # Check if the last transaction is to a known beneficiary
         # If yes, reduce the risk score
         if not window_df.empty:
             last_txn = window_df.iloc[-1]  # Get the most recent transaction
-            original_risk_pct = round(risk_prob * 100, 2)
-            
-            # Reduce risk by 35% if it's a known beneficiary transaction
             if last_txn.get('is_beneficiary', False):
+                # Reduce risk by 35% if it's a known beneficiary transaction
                 risk_pct = risk_pct * 0.65
                 risk_pct = round(risk_pct, 2)
-                print(f"[BENEFICIARY] Risk reduced to {risk_pct}% (was {original_risk_pct}%)")
-            
-            # Reduce risk by 30% if it's a merchant payment transaction
-            if last_txn.get('is_merchant', False):
-                risk_pct = risk_pct * 0.70
-                risk_pct = round(risk_pct, 2)
-                print(f"[MERCHANT] Risk reduced to {risk_pct}% (was {original_risk_pct}%)")
+                print(f"[BENEFICIARY] Risk reduced to {risk_pct}% (was {round(risk_prob * 100, 2)}%)")
 
         # Map to risk level
         if risk_pct >= 70:

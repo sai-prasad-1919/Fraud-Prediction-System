@@ -1,0 +1,232 @@
+================================================================================
+              FRAUD PREDICTION SYSTEM - TEAM SETUP GUIDE
+================================================================================
+
+GitHub Repo  : https://github.com/sai-prasad-1919/Fraud-Prediction-System
+Branch       : c1-backend
+Backend runs : http://localhost:8000
+Frontend runs: http://localhost:3000
+API Docs     : http://localhost:8000/docs
+
+================================================================================
+STEP 1 - INSTALL REQUIRED SOFTWARE
+================================================================================
+
+Install the following software before doing anything else.
+
+  1. Python 3.8+      --> https://www.python.org/downloads/
+  2. Node.js 18+      --> https://nodejs.org/
+  3. PostgreSQL 12+   --> https://www.postgresql.org/download/
+  4. MongoDB 4.0+     --> https://www.mongodb.com/try/download/community
+  5. Git              --> https://git-scm.com/downloads
+
+  IMPORTANT (PostgreSQL):
+  During PostgreSQL installation it will ask you to set a password.
+  Set it to something you will remember. You will need it in Step 4.
+
+================================================================================
+STEP 2 - CLONE THE PROJECT
+================================================================================
+
+Open a terminal (Command Prompt or Git Bash) and run:
+
+  git clone https://github.com/sai-prasad-1919/Fraud-Prediction-System.git
+  cd Fraud-Prediction-System
+  git checkout c1-backend
+
+================================================================================
+STEP 3 - CREATE THE DATABASE
+================================================================================
+
+The tables are created automatically. You only need to create the database once.
+
+  Option A - Using pgAdmin (GUI):
+    1. Open pgAdmin (installed with PostgreSQL)
+    2. Connect to your local server
+    3. Right-click "Databases" --> Create --> Database
+    4. Name it exactly:  frauddb
+    5. Click Save
+
+  Option B - Using Command Line:
+    1. Open Command Prompt
+    2. Run:  psql -U postgres
+    3. Enter your PostgreSQL password when asked
+    4. Run:  CREATE DATABASE frauddb;
+    5. Type: \q  to exit
+
+  MongoDB --> Nothing to do. It sets itself up automatically.
+
+================================================================================
+STEP 4 - BACKEND SETUP
+================================================================================
+
+Open a terminal and navigate to the project folder.
+
+  1. Go into the backend folder:
+       cd backend
+
+  2. Create a virtual environment:
+       python -m venv .venv
+
+  3. Activate the virtual environment:
+       Windows CMD   -->  .venv\Scripts\activate
+       Windows Bash  -->  source .venv/Scripts/activate
+
+     You will see (.venv) appear at the start of your terminal line.
+     This means it is activated correctly.
+
+  4. Install all dependencies:
+       pip install -r requirements.txt
+
+  5. Create your .env file:
+       Windows CMD   -->  copy .env.example .env
+       Windows Bash  -->  cp .env.example .env
+
+  6. Open the .env file in any text editor (Notepad is fine).
+     Edit it to look like this with YOUR OWN values:
+
+       APP_NAME=Fraud Risk Backend
+       APP_ENV=development
+       SQL_DB_URL=postgresql://postgres:YOUR_POSTGRES_PASSWORD@localhost:5432/frauddb
+       MONGO_URL=mongodb://localhost:27017/admin_db
+       JWT_SECRET_KEY=any-random-string-you-choose
+
+     Replace YOUR_POSTGRES_PASSWORD with the password you set in Step 1.
+     JWT_SECRET_KEY can be any random string e.g. mysecretkey123
+
+  7. Save and close the .env file.
+
+================================================================================
+STEP 5 - START THE BACKEND
+================================================================================
+
+Make sure you are inside the backend/ folder with (.venv) activated.
+
+  Run:  uvicorn app:app --reload
+
+  What you should see:
+    INFO: Started server process
+    INFO: Uvicorn running on http://127.0.0.1:8000
+
+  On the FIRST run it will automatically create all database tables.
+  You will see a log message: "Database tables initialized"
+
+  To verify it is working, open in browser:
+    http://localhost:8000
+    --> Should show: {"status": "Backend is running"}
+
+    http://localhost:8000/docs
+    --> Should show the full Swagger API documentation page
+
+  Keep this terminal open. Do not close it.
+
+================================================================================
+STEP 6 - FRONTEND SETUP
+================================================================================
+
+Open a NEW terminal (keep the backend terminal running).
+
+  1. Go to the frontend folder:
+       cd frontend
+
+  2. Install dependencies (only needed once):
+       npm install
+       (This takes 1-2 minutes the first time)
+
+  3. Start the frontend:
+       npm start
+
+  The browser will automatically open http://localhost:3000
+
+  Keep this terminal open too.
+
+================================================================================
+STEP 7 - CREATE YOUR ADMIN ACCOUNT
+================================================================================
+
+Since your local MongoDB is empty, you need to register an admin first.
+
+  Option A - Using the API Docs (Recommended):
+    1. Open http://localhost:8000/docs in browser
+    2. Click on POST /admin/register
+    3. Click "Try it out"
+    4. Enter your details:
+         {
+           "email": "youremail@example.com",
+           "password": "YourPassword@123",
+           "full_name": "Your Name"
+         }
+    5. Click Execute
+    6. Copy the "admin_id" from the response. You will need it to login.
+
+  Option B - Using Command Line (Git Bash):
+    curl -X POST http://localhost:8000/admin/register \
+      -H "Content-Type: application/json" \
+      -d "{\"email\":\"admin@test.com\",\"password\":\"Admin@123\",\"full_name\":\"Admin\"}"
+
+================================================================================
+STEP 8 - LOGIN AND USE THE SYSTEM
+================================================================================
+
+  1. Open http://localhost:3000/login in browser
+  2. Enter the Admin ID you received after registering
+  3. Enter your password
+  4. Click Login
+  5. You are now in the Dashboard
+
+================================================================================
+QUICK CHECKLIST - TICK EACH BEFORE MOVING TO NEXT
+================================================================================
+
+  [ ] Python installed
+  [ ] Node.js installed
+  [ ] PostgreSQL installed  -->  password noted down
+  [ ] MongoDB installed and running
+  [ ] Project cloned  -->  git clone ...
+  [ ] Switched to branch  -->  git checkout c1-backend
+  [ ] frauddb database created in PostgreSQL
+  [ ] Virtual environment created and activated  -->  (.venv) visible
+  [ ] pip install -r requirements.txt  -->  completed
+  [ ] .env file created and edited with correct password
+  [ ] Backend running  -->  http://localhost:8000 shows {"status":"Backend is running"}
+  [ ] Frontend running  -->  http://localhost:3000 opens in browser
+  [ ] Admin registered  -->  admin_id received
+  [ ] Logged in successfully
+
+================================================================================
+COMMON ERRORS AND FIXES
+================================================================================
+
+  ERROR: "could not connect to server" (PostgreSQL)
+  FIX:   Make sure PostgreSQL is running.
+         Open Services (Windows) and check "postgresql-x64-XX" is running.
+         Or check the password in your .env file is correct.
+
+  ERROR: "react-scripts is not recognized"
+  FIX:   You skipped npm install. Run:  npm install
+
+  ERROR: "ModuleNotFoundError"
+  FIX:   Virtual environment is not activated.
+         Run:  .venv\Scripts\activate  then  pip install -r requirements.txt
+
+  ERROR: "Connection refused" on MongoDB
+  FIX:   MongoDB service is not running.
+         Open Services (Windows) and start "MongoDB".
+
+  ERROR: Backend starts but tables not created
+  FIX:   Check that frauddb database exists in PostgreSQL.
+         CREATE DATABASE frauddb;  in pgAdmin or psql.
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+  - The .env file is NEVER pushed to GitHub. Each team member creates their own.
+  - node_modules/ is NEVER pushed. Always run npm install after cloning.
+  - .venv/ is NEVER pushed. Always create your own virtual environment.
+  - The ML model (model.pkl) IS included in the repo. No training needed.
+  - Both backend and frontend terminals must stay open while using the app.
+
+================================================================================
+                        END OF SETUP GUIDE
+================================================================================

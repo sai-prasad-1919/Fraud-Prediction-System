@@ -29,7 +29,6 @@ def get_transactions_by_user_range(
                 "transaction_type": r.transaction_type,
                 "payment_type": r.payment_type,
                 "is_beneficiary": r.is_beneficiary,
-                "is_merchant": r.is_merchant,
                 "user_bank": r.user_bank,
                 "location_city": r.location_city,
                 "location_state": r.location_state,

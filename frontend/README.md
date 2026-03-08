@@ -1,6 +1,40 @@
-# Getting Started with Create React App
+# Fraud Predict - React Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Admin dashboard for the Fraud Detection & Prediction System. Built with React 19 and React Router 7.
+
+## Pages
+
+| Page | Route | Auth Required | Purpose |
+|------|-------|:---:|---------|
+| Home | `/` | No | Landing page with system overview |
+| Login | `/login` | No | Admin authentication |
+| Dashboard | `/dashboard` | Yes | Run fraud predictions (single user or range) |
+| Fraud Cases | `/fraud-cases` | Yes | View, investigate and resolve fraud cases |
+| Advisor | `/advisor` | No | Customer fraud awareness guide |
+
+## Setup
+
+```bash
+npm install
+npm start
+```
+
+Frontend runs at `http://localhost:3000`. Backend must be running at `http://localhost:8000`.
+
+## Test Credentials
+
+```
+Admin ID: Adminsai01
+Password: Admin@123
+```
+
+## Environment
+
+To point to a different backend, create a `.env` file in this directory:
+
+```env
+REACT_APP_API_URL=http://localhost:8000
+```
 
 ## Available Scripts
 
