@@ -1,4 +1,4 @@
-# ⚡ Quick Action Guide - What to Do Now
+# ⚡ A Quick Action Guide - What to Do Now
 
 ## Current System Status
 ✅ **FULLY OPERATIONAL** - All critical files present and functional
@@ -17,7 +17,9 @@ cd "e:/SAI PRASAD/Projects/(React Frontend)Fraud-Predict_temp_10_01_26/Fraud-Pre
 
 # Start backend
 cd backend
-uvicorn app:app --reload
+uvicorn app:app --reload 
+
+## To Run the backend. Wait until the backend intilize the tables in the data bases
 ```
 
 The backend will be available at:
