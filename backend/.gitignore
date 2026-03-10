@@ -5,6 +5,3 @@ __pycache__/
 
 # Ignore raw training data (large CSV files)
 ml/data/raw/*.csv
-
-# Ignore trained model binary (can be retrained)
-ml/models/xgboost/model.pkl
