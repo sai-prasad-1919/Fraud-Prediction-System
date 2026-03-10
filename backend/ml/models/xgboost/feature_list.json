@@ -1,0 +1,13 @@
+[
+  "txn_count_7d",
+  "total_amount_7d",
+  "avg_amount_7d",
+  "max_amount_7d",
+  "std_amount_7d",
+  "rounded_amount_ratio",
+  "non_beneficiary_ratio",
+  "night_txn_ratio",
+  "unique_counterparties",
+  "digital_bank_ratio",
+  "upi_ratio"
+]

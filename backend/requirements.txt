@@ -12,5 +12,6 @@ pandas
 numpy
 joblib
 xgboost
-scikit-learnpytest
+scikit-learn
+pytest
 pytest-cov
