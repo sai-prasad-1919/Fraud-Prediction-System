@@ -2,5 +2,9 @@ venv/
 .env
 __pycache__/
 *.pyc
-data/
-models/
+
+# Ignore raw training data (large CSV files)
+ml/data/raw/*.csv
+
+# Ignore trained model binary (can be retrained)
+ml/models/xgboost/model.pkl
