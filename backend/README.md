@@ -61,6 +61,34 @@ Server runs at `http://localhost:8000`
 - `POST /admin/register` - Register new admin
 - `POST /admin/login` - Admin login
 
+### Create Admin Manually (MongoDB)
+
+Use the helper script to create an admin directly in the `admins` MongoDB collection using the same schema as the app.
+
+```bash
+# Run from backend/
+python create_mongo_admin.py --name "Sai" --email "sai@test.com" --password "Admin@123" --admin-id "Adminsai01" --role "admin"
+
+# Interactive mode (asks Name, Email, Password, Role, Admin ID)
+python create_mongo_admin.py
+```
+
+Notes:
+- If `--admin-id` is omitted, one is auto-generated in the format `Admin<name>01`.
+- The script hashes password with bcrypt, sets `created_at` in UTC, sets `role` to `admin`, and prevents duplicate emails.
+
+### Reset Existing Admin Password (MongoDB)
+
+Use this helper script to reset password_hash for an existing admin by `admin_id`.
+
+```bash
+# Run from backend/
+python reset_admin_password.py --admin-id "Akhil6785" --password "NewPass@123"
+
+# Interactive mode
+python reset_admin_password.py
+```
+
 ### Fraud Prediction
 - `POST /admin/predict` - Get fraud predictions for user range
 - `GET /admin/predict-test` - Test prediction endpoint
