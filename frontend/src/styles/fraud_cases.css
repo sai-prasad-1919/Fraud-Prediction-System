@@ -1,52 +1,52 @@
 /* Fraud Cases Page Styles */
 
 /* Table Row Hover Effect */
-tbody tr:hover {
+.fraud-cases-page tbody tr:hover {
   background-color: #f5f5f5;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 /* Scrollable Table */
-.table-wrapper {
+.fraud-cases-page .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-table {
+.fraud-cases-page table {
   width: 100%;
   border-collapse: collapse;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  table {
+  .fraud-cases-page table {
     font-size: 12px;
   }
 
-  th,
-  td {
+  .fraud-cases-page th,
+  .fraud-cases-page td {
     padding: 8px 10px;
   }
 
-  .controls-section {
+  .fraud-cases-page .controls-section {
     flex-direction: column;
   }
 
-  select {
+  .fraud-cases-page select {
     width: 100%;
   }
 }
 
 /* Loading Animation */
-@keyframes spin {
+@keyframes fraudCasesSpin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
+.fraud-cases-page .spinner {
+  animation: fraudCasesSpin 1s linear infinite;
 }
 
 /* Status Badge Styles */
@@ -91,12 +91,12 @@ table {
 }
 
 /* Button Styles */
-button:disabled {
+.fraud-cases-page button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
+.fraud-cases-page button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -220,4 +220,28 @@ a.user-id-link:hover {
   padding: 40px 20px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* Fraud Cases Background Animation (scoped) */
+.fraud-cases-background-layer {
+  animation: fraudCasesBgShift 14s ease-in-out infinite;
+  will-change: background-position;
+}
+
+@keyframes fraudCasesBgShift {
+  0% {
+    background-position: 20% 20%;
+  }
+  50% {
+    background-position: 80% 80%;
+  }
+  100% {
+    background-position: 20% 20%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fraud-cases-background-layer {
+    animation: none !important;
+  }
 }

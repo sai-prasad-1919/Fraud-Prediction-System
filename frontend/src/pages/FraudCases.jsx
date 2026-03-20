@@ -229,26 +229,30 @@ const FraudCases = () => {
       <Navbar isAdmin={true} />
       {loading && <Spinner message="Loading fraud cases..." />}
 
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <h1>🚨 Active Fraud Cases</h1>
-          <p>View and manage OPEN and UNDER_INVESTIGATION fraud cases (Resolved cases are archived)</p>
-        </div>
+      <div style={styles.container} className="fraud-cases-page">
+        <div style={styles.backgroundLayer} className="fraud-cases-background-layer" />
+        <div style={styles.containerOverlay} />
 
-        {/* Filters & Controls */}
-        <div style={styles.controlsSection}>
-          <div style={styles.filterGroup}>
-            <label style={styles.label}>Filter by Status:</label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              style={styles.select}
-            >
-              <option value="all">All Active Cases</option>
-              <option value="open">🔴 Open Only</option>
-              <option value="investigating">🟡 Under Investigation Only</option>
-            </select>
+        <div style={styles.content}>
+          <div style={styles.header}>
+            <h1>🚨 Active Fraud Cases</h1>
+            <p>View and manage OPEN and UNDER_INVESTIGATION fraud cases (Resolved cases are archived)</p>
           </div>
+
+          {/* Filters & Controls */}
+          <div style={styles.controlsSection}>
+            <div style={styles.filterGroup}>
+              <label style={styles.label}>Filter by Status:</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                style={styles.select}
+              >
+                <option value="all">All Active Cases</option>
+                <option value="open">🔴 Open Only</option>
+                <option value="investigating">🟡 Under Investigation Only</option>
+              </select>
+            </div>
 
           <div style={styles.filterGroup}>
             <label style={styles.label}>Sort by:</label>
@@ -263,26 +267,25 @@ const FraudCases = () => {
             </select>
           </div>
 
-          <button
-            style={styles.refreshBtn}
-            onClick={fetchOpenCases}
-          >
-            🔄 Refresh
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div style={{ ...styles.card, backgroundColor: "#ffebee", borderLeft: "4px solid #d32f2f", marginBottom: "20px" }}>
-            <p style={{ color: "#d32f2f" }}>
-              <b>Error:</b> {error}
-            </p>
+            <button style={styles.refreshBtn} onClick={fetchOpenCases}>
+              🔄 Refresh
+            </button>
           </div>
-        )}
 
-        {/* Cases Table */}
-        {filteredCases.length > 0 ? (
-          <div style={styles.card}>
+          {/* Error Message */}
+          {error && (
+            <div
+              style={{ ...styles.card, backgroundColor: "#ffebee", borderLeft: "4px solid #d32f2f", marginBottom: "20px" }}
+            >
+              <p style={{ color: "#d32f2f" }}>
+                <b>Error:</b> {error}
+              </p>
+            </div>
+          )}
+
+          {/* Cases Table */}
+          {filteredCases.length > 0 ? (
+            <div style={styles.card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2 style={{ marginTop: 0, marginBottom: 0 }}>Active Fraud Cases</h2>
               <div style={{ fontSize: "14px", color: "#666" }}>
@@ -397,9 +400,9 @@ const FraudCases = () => {
                 </tbody>
               </table>
             </div>
-          </div>
-        ) : (
-          <div style={styles.card}>
+            </div>
+          ) : (
+            <div style={styles.card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2 style={{ marginTop: 0, marginBottom: 0 }}>Active Fraud Cases</h2>
               <div style={{ fontSize: "14px", color: "#666" }}>
@@ -419,8 +422,9 @@ const FraudCases = () => {
               <h2>All Active Cases Resolved!</h2>
               <p>No more fraud cases to investigate. All cases in the selected filter have been resolved.</p>
             </div>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ============ RESOLVE MODAL ============ */}
@@ -576,11 +580,38 @@ const FraudCases = () => {
 
 const styles = {
   container: {
-    backgroundColor: "#f4f6f9",
+    backgroundColor: "transparent",
     minHeight: "100vh",
     padding: "40px 20px",
     maxWidth: "1400px",
     margin: "0 auto",
+    position: "relative",
+    overflow: "hidden",
+  },
+  backgroundLayer: {
+    position: "fixed",
+    inset: 0,
+    background:
+      "radial-gradient(circle at 20% 15%, rgba(22, 150, 255, 0.35) 0%, transparent 45%)," +
+      "radial-gradient(circle at 80% 70%, rgba(15, 52, 96, 0.55) 0%, transparent 50%)," +
+      "linear-gradient(135deg, #0a1f44 0%, #0f3460 45%, #1696ff 100%)",
+    backgroundSize: "200% 200%",
+    backgroundPosition: "20% 20%",
+    zIndex: 0,
+    pointerEvents: "none",
+    willChange: "background-position",
+  },
+  containerOverlay: {
+    position: "fixed",
+    inset: 0,
+    background:
+      "linear-gradient(180deg, rgba(10, 31, 68, 0.65) 0%, rgba(10, 31, 68, 0.25) 50%, rgba(10, 31, 68, 0.65) 100%)",
+    zIndex: 1,
+    pointerEvents: "none",
+  },
+  content: {
+    position: "relative",
+    zIndex: 2,
   },
   header: {
     marginBottom: "30px",
