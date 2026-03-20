@@ -8,7 +8,7 @@ const Advisor = () => {
       id: 1,
       icon: "🔒",
       title: "Why Does a Bank Freeze an Account?",
-      color: "blue",
+      color: "green",
       items: [
         "Suspicious or unusual transactions",
         "Cyber fraud complaints",
@@ -20,7 +20,7 @@ const Advisor = () => {
       id: 2,
       icon: "💳",
       title: "What To Do If Your Debit Card Is Frozen?",
-      color: "purple",
+      color: "green",
       items: [
         "Do not panic – this is a safety measure",
         "Visit your bank branch",
@@ -40,6 +40,42 @@ const Advisor = () => {
         "Report suspicious activity immediately",
       ],
     },
+
+    {
+  id: 4,
+  icon: "🆘",
+  title: "What To Do If You Are Scammed?",
+  color: "green",
+  items: [
+    "Immediately inform your bank",
+    "Call cybercrime helpline (1930 in India)",
+    "Block your card or account",
+    "File complaint on cybercrime.gov.in",
+    "Save all transaction proof",
+  ],
+},
+{
+  id:5,
+  icon:"💡",
+  title:"Do you know?",
+  color:"green",
+  items:[
+    "Banks NEVER ask for OTP, PIN, or passwords over phone or email",
+  ]
+},
+{
+  id:6,
+  icon:"🚫",
+  title:"Facts box",
+  color:"green",
+  items:[
+    "In some apps they collect your UPI ID in some cases.",
+    "Your UPI is used in scams where victims send money to your account.",
+    "You receive money and think it’s profit — but it belongs to fraud victims",
+    "Cybercrime tracks the transaction to YOU — making you appear as the scammer.",
+    "Your account can be frozen and legal action may be taken.",
+  ],
+}
   ];
 
   return (

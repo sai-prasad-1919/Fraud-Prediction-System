@@ -616,6 +616,7 @@ const styles = {
   header: {
     marginBottom: "30px",
     textAlign: "center",
+    color: "white",
   },
   controlsSection: {
     display: "flex",
@@ -632,7 +633,7 @@ const styles = {
   label: {
     fontSize: "14px",
     fontWeight: "bold",
-    color: "#333",
+    color: "white",
   },
   select: {
     padding: "10px 12px",
