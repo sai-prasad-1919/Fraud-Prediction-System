@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Spinner from "../components/Spinner";
 import api from "../api/client";
 import "../styles/dashboard.css";
+import bgImage from "../image.png";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -278,10 +279,13 @@ const Dashboard = () => {
       <Navbar isAdmin={true} />
       {loading && <Spinner message="Fetching fraud predictions..." />}
 
-      <div style={styles.container}>
+      <div style={styles.container} className="dashboard-page">
+        <div style={styles.backgroundLayer} />
+        <div style={styles.containerOverlay} />
         {/* TABS */}
-        <div style={styles.tabContainer}>
+        <div style={styles.tabContainer} className="dashboard-tabs-container">
           <button
+            className="dashboard-tab-btn"
             style={{
               ...styles.tab,
               backgroundColor: activeTab === "individual" ? "#0b3c5d" : "#e0e0e0",
@@ -293,9 +297,10 @@ const Dashboard = () => {
               setRisk(null);
             }}
           >
-            Individual Search
+            <span className="tab-icon">🔍</span> Individual Search
           </button>
           <button
+            className="dashboard-tab-btn"
             style={{
               ...styles.tab,
               backgroundColor: activeTab === "range" ? "#0b3c5d" : "#e0e0e0",
@@ -308,16 +313,17 @@ const Dashboard = () => {
               setFilteredResults([]);
             }}
           >
-            Range Search (Bulk Check)
+            <span className="tab-icon">📊</span> Range Search (Bulk Check)
           </button>
         </div>
 
         {/* ============ INDIVIDUAL SEARCH ============ */}
         {activeTab === "individual" && (
-          <div style={styles.card}>
+          <div style={styles.card} className="dashboard-card-animated">
             <h2>Individual User Risk Check</h2>
 
             <input
+              className="dashboard-input-animated"
               style={styles.input}
               type="number"
               placeholder="Enter User ID (e.g., 1, 100, 2141)"
@@ -325,20 +331,32 @@ const Dashboard = () => {
               onChange={(e) => setUserId(e.target.value)}
             />
 
-            <button style={{ ...styles.button, opacity: loading ? 0.6 : 1 }} onClick={predict} disabled={loading}>
-              {loading ? "Checking..." : "Check Risk"}
+            <button
+              className="dashboard-btn-primary"
+              style={{
+                ...styles.button,
+                width: "260px",
+                maxWidth: "100%",
+                display: "block",
+                margin: "10px auto 0",
+                opacity: loading ? 0.6 : 1,
+              }}
+              onClick={predict}
+              disabled={loading}
+            >
+              {loading ? "🔄 Checking..." : "✓ Check Risk"}
             </button>
 
             {error && (
-              <div style={{ ...styles.result, backgroundColor: "#ffebee" }}>
+              <div style={{ ...styles.result, backgroundColor: "#ffebee" }} className="dashboard-result-error">
                 <p style={{ color: "#d32f2f" }}>
-                  <b>Error:</b> {String(error)}
+                  <b>⚠️ Error:</b> {String(error)}
                 </p>
               </div>
             )}
 
             {risk && (
-              <div style={{ ...styles.result, backgroundColor: risk.isGenuine ? "#e8f5e9" : "#fafafa" }}>
+              <div style={{ ...styles.result, backgroundColor: risk.isGenuine ? "#e8f5e9" : "#fafafa" }} className="dashboard-result-card">
                 {risk.isGenuine ? (
                   <>
                     <p style={{ color: "#2e7d32", fontSize: "18px", fontWeight: "bold" }}>✓ All Transactions Are Genuine</p>
@@ -385,13 +403,14 @@ const Dashboard = () => {
 
         {/* ============ RANGE SEARCH ============ */}
         {activeTab === "range" && (
-          <div style={styles.card}>
+          <div style={styles.card} className="dashboard-card-animated dashboard-range-search">
             <h2>Bulk Risk Check (User Range)</h2>
 
             <div style={styles.inputRow}>
-              <div>
+              <div className="form-group-animated">
                 <label style={styles.label}>From User ID</label>
                 <input
+                  className="dashboard-input-animated"
                   style={styles.input}
                   type="number"
                   placeholder="e.g., 1"
@@ -399,9 +418,10 @@ const Dashboard = () => {
                   onChange={(e) => setStartUserId(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="form-group-animated">
                 <label style={styles.label}>To User ID</label>
                 <input
+                  className="dashboard-input-animated"
                   style={styles.input}
                   type="number"
                   placeholder="e.g., 100"
@@ -412,39 +432,49 @@ const Dashboard = () => {
             </div>
 
             <button
-              style={{ ...styles.button, opacity: loading ? 0.6 : 1 }}
+              className="dashboard-btn-primary"
+              style={{
+                ...styles.button,
+                width: "260px",
+                maxWidth: "100%",
+                display: "block",
+                margin: "10px auto 0",
+                opacity: loading ? 0.6 : 1,
+              }}
               onClick={predictRange}
               disabled={loading}
             >
-              {loading ? "Scanning..." : "Scan for Fraud"}
+              {loading ? "🔄 Scanning..." : "🔎 Scan for Fraud"}
             </button>
 
             {error && (
-              <div style={{ ...styles.result, backgroundColor: "#ffebee" }}>
+              <div style={{ ...styles.result, backgroundColor: "#ffebee" }} className="dashboard-result-error">
                 <p style={{ color: "#d32f2f" }}>
-                  <b>No Risky Accounts Found:</b> {String(error)}
+                  <b>✓ No Risky Accounts Found:</b> {String(error)}
                 </p>
               </div>
             )}
 
             {/* Results Table */}
             {filteredResults.length > 0 && (
-              <div style={styles.resultsSection}>
-                <div style={styles.resultHeader}>
+              <div style={styles.resultsSection} className="dashboard-results-animated">
+                <div style={styles.resultHeader} className="dashboard-results-header">
                   <h3>Risky Accounts Found: {filteredResults.length}</h3>
-                  <div style={styles.sortContainer}>
-                    <label>Sort by:</label>
+                  <div style={styles.sortContainer} className="dashboard-sort-container">
+                    <label style={styles.sortLabel} className="dashboard-sort-label">Sort by:</label>
                     <select
+                      className="dashboard-sort-select"
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
                       style={styles.sortSelect}
                     >
-                      <option value="risk_level">Risk Level (High to Low)</option>
-                      <option value="user_id">User ID (A to Z)</option>
+                      <option value="risk_level">Risk User</option>
+                      <option value="user_id">User ID</option>
                     </select>
                   </div>
                 </div>
 
+                <div style={styles.tableWrapper} className="dashboard-table-wrapper">
                 <table style={styles.table}>
                   <thead>
                     <tr style={styles.tableHeader}>
@@ -458,12 +488,15 @@ const Dashboard = () => {
                   </thead>
                   <tbody>
                     {filteredResults.map((user, idx) => (
-                      <tr key={idx} style={styles.tableRow}>
+                      <tr key={idx} style={{...styles.tableRow, animationDelay: `${idx * 0.05}s`}} className="table-row-animated">
                         <td style={styles.td}>{user.user_id}</td>
                         <td style={styles.td}>
-                          <span style={getRiskLevelColor(user.risk_level)}>{user.risk_level_name}</span>
+                          <span style={getRiskLevelColor(user.risk_level)} className="risk-badge">{user.risk_level_name}</span>
                         </td>
-                        <td style={styles.td}>{user.window_txn_count}</td>
+                        <td style={styles.td}>
+                          <span className="txn-count-badge">{user.window_txn_count}</span>
+                        
+                        </td>
                         <td style={{ ...styles.td, fontSize: "12px" }}>
                           {user.risk_level === 1 && "KYC Review Required"}
                           {user.risk_level === 2 && "Debit Freeze & Cyber Cell"}
@@ -471,6 +504,7 @@ const Dashboard = () => {
                         </td>
                         <td style={styles.td}>
                           <button
+                            className="dashboard-icon-btn"
                             style={styles.smallBtn}
                             onClick={() => handleViewTransactions(user.sample_transactions, `Transactions for ${user.user_id}`)}
                           >
@@ -479,6 +513,7 @@ const Dashboard = () => {
                         </td>
                         <td style={styles.td}>
                           <button
+                            className="dashboard-action-btn-small"
                             style={styles.actionBtn}
                             onClick={() =>
                               handleTakeAction({
@@ -494,6 +529,7 @@ const Dashboard = () => {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
@@ -502,11 +538,12 @@ const Dashboard = () => {
 
       {/* ============ TRANSACTION MODAL ============ */}
       {showModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowModal(false)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.modalOverlay} className="dashboard-modal-overlay" onClick={() => setShowModal(false)}>
+          <div style={styles.modalContent} className="dashboard-modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h3>{modalTitle}</h3>
+              <h3>📋 {modalTitle}</h3>
               <button
+                className="modal-close-btn"
                 style={styles.closeBtn}
                 onClick={() => setShowModal(false)}
               >
@@ -523,7 +560,7 @@ const Dashboard = () => {
                   const isSuspiciousTime = txnTimeHour !== null && (txnTimeHour < 6 || txnTimeHour > 22);
 
                   return (
-                    <div key={idx} style={styles.transactionCard}>
+                    <div key={idx} style={{...styles.transactionCard, animationDelay: `${idx * 0.08}s`}} className="transaction-card-animated">
                       <div style={styles.txnRow}>
                         <span style={styles.txnLabel}>Transaction ID:</span>
                         <span style={{ fontWeight: "bold", color: "#0b3c5d" }}>{txn.transaction_id || txn.id || "N/A"}</span>
@@ -690,36 +727,83 @@ const getRiskLevelColor = (level) => {
 
 const styles = {
   container: {
-    backgroundColor: "#f4f6f9",
     minHeight: "100vh",
-    padding: "40px 20px",
+    padding: "0 20px",
+    position: "relative",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 0,
+  },
+  backgroundLayer: {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "scroll",
+    zIndex: 0,
+    pointerEvents: "none",
+    animation: "dashboardBgTransform 12s ease-in-out infinite",
+    willChange: "transform",
+  },
+  containerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background:
+      "radial-gradient(circle at 15% 20%, rgba(22, 150, 255, 0.20) 0%, transparent 45%)," +
+      "radial-gradient(circle at 85% 75%, rgba(15, 52, 96, 0.25) 0%, transparent 50%)," +
+      "linear-gradient(135deg, rgba(10, 31, 68, 0.78) 0%, rgba(15, 52, 96, 0.55) 45%, rgba(22, 150, 255, 0.22) 100%)",
+    pointerEvents: "none",
+    zIndex: 0,
+    animation: "bgFloat 15s ease-in-out infinite",
   },
   tabContainer: {
     display: "flex",
     gap: "10px",
     maxWidth: "1000px",
-    margin: "0 auto 20px",
+    margin: "60px auto 30px",
+    justifyContent: "center",
+    position: "relative",
+    zIndex: 2,
   },
   tab: {
     flex: 1,
     padding: "12px 20px",
-    border: "none",
-    borderRadius: "6px",
+    border: "2px solid rgba(22, 150, 255, 0.3)",
+    borderRadius: "8px",
     cursor: "pointer",
     fontSize: "16px",
     fontWeight: "bold",
     transition: "all 0.3s ease",
+    background: "rgba(255, 255, 255, 0.9)",
+    color: "#0a1e2e",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+    animation: "slideUp 0.6s ease-out",
   },
   card: {
-    maxWidth: "1000px",
-    margin: "auto",
-    backgroundColor: "white",
-    padding: "30px",
-    borderRadius: "12px",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+    maxWidth: "1100px",
+    width: "100%",
+    margin: "0 auto",
+    backgroundColor: "rgba(255, 255, 255, 0.97)",
+    padding: "clamp(20px, 4vw, 60px)",
+    borderRadius: "16px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(22, 150, 255, 0.15)",
+    border: "2px solid rgba(22, 150, 255, 0.3)",
+    backdropFilter: "blur(10px)",
+    position: "relative",
+    zIndex: 2,
+    animation: "slideUp 0.6s ease-out, cardGlow 4s ease-in-out infinite",
+    overflow: "hidden",
   },
   inputRow: {
     display: "flex",
+    flexWrap: "wrap",
     gap: "20px",
     marginBottom: "20px",
   },
@@ -727,33 +811,53 @@ const styles = {
     display: "block",
     marginBottom: "8px",
     fontWeight: "bold",
-    color: "#333",
+    color: "#0a1e2e",
+    fontSize: "14px",
   },
   input: {
     width: "100%",
-    padding: "12px",
+    padding: "13px 15px",
     marginBottom: "15px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
+    borderRadius: "8px",
+    border: "2px solid #e0e0e0",
+    background: "rgba(245, 245, 245, 0.7)",
+    fontSize: "14px",
+    transition: "all 0.3s ease",
+    boxSizing: "border-box",
+    animation: "slideUp 0.7s ease-out",
   },
   button: {
     width: "100%",
-    padding: "12px",
-    backgroundColor: "#0b3c5d",
+    padding: "13px",
+    background: "linear-gradient(135deg, #1696ff 0%, #0f3460 100%)",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "600",
+    fontSize: "15px",
+    boxShadow: "0 4px 15px rgba(22, 150, 255, 0.3)",
+    transition: "all 0.3s ease",
+    marginTop: "10px",
+    position: "relative",
+    overflow: "hidden",
+    animation: "slideUp 0.8s ease-out, buttonShimmer 3s ease-in-out infinite",
   },
   result: {
     marginTop: "20px",
-    padding: "15px",
-    backgroundColor: "#fafafa",
+    padding: "18px 20px",
+    background: "linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 107, 107, 0.03) 100%)",
     borderRadius: "8px",
+    borderLeft: "5px solid #ff6b6b",
+    border: "1px solid rgba(255, 107, 107, 0.2)",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    fontWeight: "500",
+    color: "#333",
+    animation: "fadeIn 0.4s ease-in, resultPulse 2s ease-in-out infinite",
   },
   resultsSection: {
     marginTop: "30px",
+    animation: "fadeIn 0.6s ease-in",
   },
   resultHeader: {
     display: "flex",
@@ -761,27 +865,48 @@ const styles = {
     alignItems: "center",
     marginBottom: "20px",
     paddingBottom: "10px",
-    borderBottom: "2px solid #0b3c5d",
+    borderBottom: "2px solid rgba(22, 150, 255, 0.3)",
   },
   sortContainer: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
   },
+  sortLabel: {
+    fontSize: "16px",
+    fontWeight: "500",
+    color: "#0a1e2e",
+  },
   sortSelect: {
-    padding: "8px 12px",
-    border: "1px solid #0b3c5d",
-    borderRadius: "4px",
+    padding: "10px 40px 10px 14px",
+    border: "2px solid rgba(22, 150, 255, 0.32)",
+    borderRadius: "10px",
     cursor: "pointer",
+    background: "rgba(255, 255, 255, 0.96)",
+    color: "#0a1e2e",
+    fontWeight: "700",
+    minWidth: "180px",
+    height: "52px",
+    outline: "none",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+  },
+  tableWrapper: {
+    width: "100%",
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch",
   },
   table: {
     width: "100%",
+    minWidth: "760px",
     borderCollapse: "collapse",
-    backgroundColor: "white",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+    borderRadius: "8px",
+    overflow: "hidden",
+    animation: "slideUp 0.7s ease-out",
   },
   tableHeader: {
-    backgroundColor: "#0b3c5d",
+    background: "linear-gradient(135deg, #1696ff 0%, #0f3460 100%)",
     color: "white",
   },
   th: {
@@ -791,21 +916,26 @@ const styles = {
   },
   tableRow: {
     borderBottom: "1px solid #e0e0e0",
-    "&:hover": { backgroundColor: "#f9f9f9" },
+    transition: "all 0.3s ease",
   },
   td: {
     padding: "12px",
     textAlign: "left",
+    color: "#0a1e2e",
   },
   actionBtn: {
     padding: "6px 12px",
-    backgroundColor: "#0b3c5d",
+    background: "linear-gradient(135deg, #1696ff 0%, #0f3460 100%)",
     color: "white",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
     fontSize: "12px",
     fontWeight: "bold",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 8px rgba(22, 150, 255, 0.3)",
+    position: "relative",
+    overflow: "hidden",
   },
   buttonRow: {
     display: "flex",
@@ -815,24 +945,27 @@ const styles = {
   secondaryBtn: {
     flex: 1,
     padding: "10px 15px",
-    backgroundColor: "#1976d2",
+    background: "rgba(255, 255, 255, 0.9)",
+    color: "#0a1e2e",
+    border: "2px solid rgba(22, 150, 255, 0.3)",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "bold",
+    transition: "all 0.3s ease",
+  },
+  smallBtn: {
+    padding: "4px 8px",
+    background: "linear-gradient(135deg, #1696ff 0%, #0f3460 100%)",
     color: "white",
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "bold",
-    transition: "background-color 0.3s",
-  },
-  smallBtn: {
-    padding: "4px 8px",
-    backgroundColor: "#1976d2",
-    color: "white",
-    border: "none",
-    borderRadius: "3px",
-    cursor: "pointer",
     fontSize: "11px",
     fontWeight: "bold",
+    transition: "all 0.3s ease",
+    boxShadow: "0 2px 6px rgba(22, 150, 255, 0.3)",
+    animation: "buttonShimmer 3s ease-in-out infinite",
   },
   modalOverlay: {
     position: "fixed",
@@ -840,27 +973,31 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
+    animation: "fadeIn 0.3s ease-in",
   },
   modalContent: {
-    backgroundColor: "white",
-    borderRadius: "12px",
+    backgroundColor: "rgba(255, 255, 255, 0.98)",
+    borderRadius: "16px",
     padding: "30px",
     maxWidth: "600px",
     maxHeight: "80vh",
     overflowY: "auto",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+    border: "2px solid rgba(22, 150, 255, 0.3)",
+    backdropFilter: "blur(10px)",
+    animation: "slideUp 0.4s ease-out",
   },
   modalHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "20px",
-    borderBottom: "2px solid #0b3c5d",
+    borderBottom: "2px solid rgba(22, 150, 255, 0.3)",
     paddingBottom: "15px",
   },
   closeBtn: {
@@ -869,6 +1006,7 @@ const styles = {
     fontSize: "24px",
     cursor: "pointer",
     color: "#999",
+    transition: "all 0.3s ease",
   },
   transactionsList: {
     display: "flex",
@@ -876,10 +1014,13 @@ const styles = {
     gap: "15px",
   },
   transactionCard: {
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "rgba(245, 245, 245, 0.8)",
     padding: "15px",
     borderRadius: "8px",
-    border: "1px solid #e0e0e0",
+    border: "1px solid rgba(22, 150, 255, 0.2)",
+    boxShadow: "0 2px 8px rgba(22, 150, 255, 0.1)",
+    animation: "fadeIn 0.4s ease-in",
+    transition: "all 0.3s ease",
   },
   txnRow: {
     display: "flex",
@@ -890,7 +1031,7 @@ const styles = {
   },
   txnLabel: {
     fontWeight: "bold",
-    color: "#0b3c5d",
+    color: "#1696ff",
     minWidth: "120px",
   },
 };

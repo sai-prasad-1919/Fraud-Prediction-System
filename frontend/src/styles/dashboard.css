@@ -1,43 +1,1259 @@
 .dashboard-container {
   padding: 40px;
+  background: 
+    linear-gradient(135deg, rgba(10, 30, 46, 0.7) 0%, rgba(15, 52, 96, 0.7) 50%, rgba(10, 30, 46, 0.7) 100%),
+    url('../image.png') center/cover scroll;
+  background-blend-mode: multiply;
+  min-height: calc(100vh - 60px);
+  position: relative;
+  animation: dashboardGradient 25s ease infinite;
+
+}
+
+.dashboard-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 25%, rgba(22, 150, 255, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 85% 75%, rgba(22, 150, 255, 0.06) 0%, transparent 35%),
+    radial-gradient(circle at 50% 50%, rgba(15, 52, 96, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbitPulseEffect 15s ease-in-out infinite;
+}
+@keyframes bgZoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes orbitPulseEffect {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.dashboard-container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(0deg, transparent 24%, rgba(22, 150, 255, 0.02) 25%, rgba(22, 150, 255, 0.02) 26%, transparent 27%, transparent 74%, rgba(22, 150, 255, 0.02) 75%, rgba(22, 150, 255, 0.02) 76%, transparent 77%, transparent),
+    linear-gradient(90deg, transparent 24%, rgba(22, 150, 255, 0.02) 25%, rgba(22, 150, 255, 0.02) 26%, transparent 27%, transparent 74%, rgba(22, 150, 255, 0.02) 75%, rgba(22, 150, 255, 0.02) 76%, transparent 77%, transparent);
+  background-size: 60px 60px, 60px 60px;
+  animation: dashboardGridFlow 25s linear infinite;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+@keyframes dashboardGridFlow {
+  0% { 
+    background-position: 0 0, 0 0;
+  }
+  100% { 
+    background-position: 60px 60px, -60px -60px;
+  }
+}
+
+@keyframes bgFloat {
+  0%, 100% {
+    filter: brightness(1.03) contrast(1.03);
+  }
+  50% {
+    filter: brightness(1.12) contrast(1.08);
+  }
+}
+
+@keyframes dashboardBgPan {
+  0% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 60% 40%;
+  }
+  100% {
+    background-position: 50% 50%;
+  }
+}
+
+@keyframes dashboardBgTransform {
+  0% {
+    transform: translate3d(-3.2%, -2.3%, 0) scale(1.07) rotate(-0.6deg);
+  }
+  50% {
+    transform: translate3d(3.2%, 2.3%, 0) scale(1.13) rotate(0.6deg);
+  }
+  100% {
+    transform: translate3d(-3.2%, -2.3%, 0) scale(1.07) rotate(-0.6deg);
+  }
+}
+
+/* Dashboard Button Styles with unique hover effects */
+.dashboard-btn {
+  background: linear-gradient(135deg, #1696ff 0%, #0f3460 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 13px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.dashboard-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.dashboard-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.dashboard-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+  box-shadow: 
+    0 10px 30px rgba(255, 107, 53, 0.5),
+    0 0 40px rgba(255, 107, 53, 0.3) !important;
+  animation: dashboardButtonGlow 0.6s ease;
+}
+
+.dashboard-btn:hover::before {
+  width: 250px;
+  height: 250px;
+}
+
+.dashboard-btn:hover::after {
+  left: 100%;
+}
+
+.dashboard-btn:active {
+  transform: translateY(-1px) scale(0.98) !important;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4) !important;
+}
+
+@keyframes dashboardButtonGlow {
+  0% { box-shadow: 0 10px 30px rgba(255, 107, 53, 0.5), 0 0 40px rgba(255, 107, 53, 0.3); }
+  50% { box-shadow: 0 10px 30px rgba(255, 107, 53, 0.7), 0 0 60px rgba(255, 107, 53, 0.5); }
+  100% { box-shadow: 0 10px 30px rgba(255, 107, 53, 0.5), 0 0 40px rgba(255, 107, 53, 0.3); }
+}
+
+@keyframes gridShift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(50px); }
+}
+
+@keyframes dashboardGradient {
+  0% { 
+    background-position: 0% 50%, 0% 50%, 0% 50%;
+  }
+  50% { 
+    background-position: 100% 50%, 100% 50%, 100% 50%;
+  }
+  100% { 
+    background-position: 0% 50%, 0% 50%, 0% 50%;
+  }
 }
 
 .dashboard-card {
-  max-width: 500px;
+  max-width: 750px;
   margin: auto;
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  background: rgba(255, 255, 255, 0.97);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(22, 150, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(22, 150, 255, 0.3);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scanDown {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(22, 150, 255, 0.15);
+  }
+  50% {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 60px rgba(22, 150, 255, 0.25), inset 0 0 60px rgba(22, 150, 255, 0.1);
+  }
+}
+
+@keyframes resultPulse {
+  0%, 100% {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 107, 107, 0.03) 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), 0 0 20px rgba(255, 107, 107, 0);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.12) 0%, rgba(255, 107, 107, 0.06) 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2), 0 0 30px rgba(255, 107, 107, 0.3);
+  }
+}
+
+@keyframes buttonShimmer {
+  0% {
+    box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3), inset -2px -2px 5px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(22, 150, 255, 0.5), inset -2px -2px 5px rgba(0,0,0,0.2), 0 0 30px rgba(22, 150, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3), inset -2px -2px 5px rgba(0,0,0,0.3);
+  }
+}
+
+@keyframes tableRowHover {
+  0% {
+    background: rgba(245, 245, 245, 0.5);
+  }
+  100% {
+    background: rgba(22, 150, 255, 0.08);
+  }
+}
+
+@keyframes inputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 150, 255, 0);
+    border-color: #e0e0e0;
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(22, 150, 255, 0.4);
+    border-color: #1696ff;
+  }
+}
+
+/* Hover effects for buttons */
+.dashboard-page button:hover,
+.dashboard-page input[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(22, 150, 255, 0.4) !important;
+}
+
+.dashboard-page button:active,
+.dashboard-page input[type="submit"]:active {
+  transform: translateY(0);
+}
+
+/* Table row hover effect */
+tbody tr:hover {
+  background: rgba(22, 150, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* Input focus effects */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #1696ff !important;
+  box-shadow: 0 0 20px rgba(22, 150, 255, 0.4);
+  animation: inputFocus 0.3s ease;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35), 0 0 50px rgba(22, 150, 255, 0.25);
+  border-color: rgba(22, 150, 255, 0.5);
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
 }
 
 .dashboard-input {
   width: 100%;
-  padding: 12px;
+  padding: 13px 15px;
   margin: 15px 0;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  background: rgba(245, 245, 245, 0.7);
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.dashboard-input:focus {
+  outline: none;
+  border-color: #1696ff;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 4px rgba(22, 150, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.dashboard-input::placeholder {
+  color: #999;
+  font-weight: 500;
 }
 
 .dashboard-btn {
   width: 100%;
-  padding: 12px;
-  background: var(--primary);
+  padding: 13px;
+  background: linear-gradient(135deg, #1696ff 0%, #0f3460 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3);
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
-.risk-result {
+.dashboard-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.dashboard-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(22, 150, 255, 0.5);
+}
+
+.dashboard-btn:hover::before {
+  left: 100%;
+}
+
+.dashboard-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(22, 150, 255, 0.3);
+}
+
+/* ============ ENHANCED ANIMATIONS FOR DASHBOARD ============ */
+
+/* Tab Container Animations */
+.dashboard-tabs-container {
+  animation: tabsSlideDown 0.5s ease-out;
+}
+
+@keyframes tabsSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab Button Animations */
+.dashboard-tab-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-tab-btn .tab-icon {
+  display: inline-block;
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.dashboard-tab-btn:hover .tab-icon {
+  transform: scale(1.2) rotate(5deg);
+  animation: iconBounce 0.5s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: scale(1.2) rotate(5deg); }
+  50% { transform: scale(1.3) rotate(-5deg); }
+}
+
+.dashboard-tab-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: left 0.5s ease;
+  z-index: -1;
+}
+
+.dashboard-tab-btn:hover::before {
+  left: 100%;
+}
+
+/* Card Entrance Animation */
+.dashboard-card-animated {
+  animation: cardEntranceSlide 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cardEntranceSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Input Field Animations */
+.dashboard-input-animated {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: inputEntrance 0.5s ease-out backwards;
+}
+
+.form-group-animated:nth-child(1) .dashboard-input-animated {
+  animation-delay: 0.1s;
+}
+
+.form-group-animated:nth-child(2) .dashboard-input-animated {
+  animation-delay: 0.2s;
+}
+
+@keyframes inputEntrance {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+    box-shadow: 0 0 0 rgba(22, 150, 255, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    box-shadow: 0 0 0 rgba(22, 150, 255, 0);
+  }
+}
+
+.dashboard-input-animated:focus {
+  animation: inputFocusPulse 0.4s ease;
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(22, 150, 255, 0.5) !important;
+}
+
+@keyframes inputFocusPulse {
+  0% {
+    box-shadow: 0 0 10px rgba(22, 150, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(22, 150, 255, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(22, 150, 255, 0.4);
+  }
+}
+
+/* Primary Button Animation */
+.dashboard-btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: buttonEnter 0.5s ease-out 0.3s backwards;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+@keyframes buttonEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.dashboard-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.dashboard-btn-primary:hover::before {
+  left: 100%;
+  animation: shimmerPulse 0.6s ease;
+}
+
+.dashboard-btn-primary:hover::after {
+  width: 300px;
+  height: 300px;
+}
+
+@keyframes shimmerPulse {
+  0% { left: -100%; }
+  50% { left: -50%; }
+  100% { left: 100%; }
+}
+
+.dashboard-btn-primary:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 35px rgba(22, 150, 255, 0.5);
+  animation: glowPulse 0.6s ease;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 12px 35px rgba(22, 150, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 12px 45px rgba(22, 150, 255, 0.8), 0 0 60px rgba(22, 150, 255, 0.4);
+  }
+}
+
+.dashboard-btn-primary:active {
+  transform: translateY(-1px) scale(0.99);
+  box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3);
+}
+
+/* Clean Range Search input/button styling */
+.dashboard-range-search .dashboard-input-animated {
+  animation: rangeInputFade 0.35s ease-out backwards;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.dashboard-range-search .form-group-animated:nth-child(1) .dashboard-input-animated {
+  animation-delay: 0.05s;
+}
+
+.dashboard-range-search .form-group-animated:nth-child(2) .dashboard-input-animated {
+  animation-delay: 0.1s;
+}
+
+@keyframes rangeInputFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-range-search .dashboard-input-animated:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(22, 150, 255, 0.12) !important;
+}
+
+.dashboard-range-search .dashboard-btn-primary {
+  letter-spacing: 0.2px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.dashboard-range-search .dashboard-btn-primary::before,
+.dashboard-range-search .dashboard-btn-primary::after {
+  content: none;
+}
+
+.dashboard-range-search .dashboard-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(22, 150, 255, 0.32);
+  filter: brightness(1.01);
+  animation: none;
+}
+
+/* Clean Sort Control (Range results) */
+.dashboard-sort-container {
+  padding: 4px 0;
+}
+
+.dashboard-sort-label {
+  margin-right: 4px;
+}
+
+.dashboard-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #1d3345 50%),
+    linear-gradient(135deg, #1d3345 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 4px),
+    calc(100% - 12px) calc(50% - 4px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.dashboard-sort-select:hover {
+  border-color: rgba(22, 150, 255, 0.55) !important;
+  box-shadow: 0 5px 14px rgba(22, 150, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+.dashboard-sort-select:focus {
+  border-color: #1696ff !important;
+  box-shadow: 0 0 0 4px rgba(22, 150, 255, 0.14);
+}
+
+.dashboard-sort-select option {
+  background: #ffffff;
+  color: #0a1e2e;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .dashboard-results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dashboard-sort-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-sort-select {
+    min-width: 0 !important;
+    width: min(100%, 220px);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 0 12px !important;
+  }
+
+  .dashboard-card-animated {
+    padding: 24px !important;
+  }
+
+  .dashboard-range-search .form-group-animated {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .dashboard-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-table-wrapper table {
+    min-width: 720px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-sort-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .dashboard-sort-select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-sort-label {
+    margin-right: 0;
+  }
+}
+
+/* Result Card Animation */
+.dashboard-result-card {
+  animation: resultCardAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes resultCardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Result Error Animation */
+.dashboard-result-error {
+  animation: shakeError 0.5s ease-in-out;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-5px); }
+}
+
+/* Results Section Animation */
+.dashboard-results-animated {
+  animation: resultsSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes resultsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Table Row Stagger Animation */
+.table-row-animated {
+  animation: tableRowFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@keyframes tableRowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.table-row-animated:hover {
+  transform: translateY(-3px);
+  background: rgba(22, 150, 255, 0.08);
+  box-shadow: 0 8px 20px rgba(11, 60, 93, 0.12);
+}
+
+@keyframes rowHoverGlow {
+  0% {
+    background: rgba(22, 150, 255, 0.05);
+  }
+  50% {
+    background: rgba(22, 150, 255, 0.12);
+  }
+  100% {
+    background: rgba(22, 150, 255, 0.08);
+  }
+}
+
+/* Badge Animations */
+.risk-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  animation: badgePulse 0.6s ease;
+}
+
+@keyframes badgePulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.risk-badge:hover {
+  transform: scale(1.15) translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Transaction Count Badge */
+.txn-count-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  animation: countPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes countPop {
+  0% {
+    transform: scale(0) rotate(-360deg);
+  }
+  70% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* Icon Button Animations */
+.dashboard-icon-btn {
+  position: relative;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  animation: iconButtonEnter 0.4s ease backwards;
+}
+
+@keyframes iconButtonEnter {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dashboard-icon-btn:hover {
+  transform: scale(1.3) rotate(10deg);
+  animation: iconButtonHover 0.4s ease;
+}
+
+@keyframes iconButtonHover {
+  0% { transform: scale(1.3) rotate(10deg); }
+  50% { transform: scale(1.4) rotate(-10deg); }
+  100% { transform: scale(1.3) rotate(10deg); }
+}
+
+/* Action Button Small Animations */
+.dashboard-action-btn-small {
+  position: relative;
+  transition: all 0.3s ease;
+  animation: actionBtnEnter 0.4s ease backwards;
+}
+
+@keyframes actionBtnEnter {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dashboard-action-btn-small:hover {
+  animation: actionBtnPulse 0.5s ease;
+}
+
+@keyframes actionBtnPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0);
+  }
+  50% {
+    transform: scale(1.4);
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.8);
+  }
+}
+
+/* Modal Animations */
+.dashboard-modal-overlay {
+  animation: overlayFadeIn 0.3s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(5px);
+  }
+}
+
+.dashboard-modal-content {
+  animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-close-btn {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  transform: rotate(90deg) scale(1.3);
+  color: #ff6b6b;
+  animation: closeButtonSpin 0.4s ease;
+}
+
+@keyframes closeButtonSpin {
+  0% { transform: rotate(0) scale(1); }
+  50% { transform: rotate(45deg) scale(1.4); }
+  100% { transform: rotate(90deg) scale(1.3); }
+}
+
+/* Transaction Card Animations */
+.transaction-card-animated {
+  animation: transactionCardSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+@keyframes transactionCardSlide {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.transaction-card-animated:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+/* ============ SMOOTH SCROLLING & GLOBAL TRANSITIONS ============ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  overflow-x: auto;
+}
+
+/* Enhanced list animations */
+ul, ol {
+  list-style-position: inside;
+}
+
+li {
+  transition: all 0.3s ease;
+}
+
+li:hover {
+  transform: translateX(5px);
+}
+
+/* Smooth text selection */
+::selection {
+  background: rgba(22, 150, 255, 0.3);
+  color: #0b3c5d;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(22, 150, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1696ff, #0f3460);
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #1f7aff, #1a4a7f);
+  box-shadow: 0 0 10px rgba(22, 150, 255, 0.3);
+}
+
+/* Smooth focus states */
+*:focus-visible {
+  outline: 2px solid rgba(22, 150, 255, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+  transition: outline 0.2s ease;
+}
+
+/* Global smooth transitions */
+input, button, select, textarea {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Loader animation for buttons */
+@keyframes buttonLoadingSpinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Fade in animations for delayed elements */
+@keyframes delayedFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse animation for important elements */
+@keyframes gentlePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(22, 150, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(22, 150, 255, 0);
+  }
+}
+
+/* Wave animation for status indicators */
+@keyframes waveAnimation {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Table & Lists Animations */
+table {
+  animation: tableSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tableSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+thead tr {
+  animation: tableHeaderGlow 0.8s ease-out;
+}
+
+@keyframes tableHeaderGlow {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(22, 150, 255, 0);
+  }
+  50% {
+    box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3);
+  }
+  100% {
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(22, 150, 255, 0.1);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+[role="button"], button, a {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Loading state animation */
+.loading {
+  animation: loadingPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes loadingPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Ripple effect for buttons */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Smooth page transitions */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============ ORIGINAL DASHBOARD STYLES ============ */
+
+/* Tab Styling */
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  color: #0a1e2e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(22, 150, 255, 0.2);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #1696ff 0%, #0f3460 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(22, 150, 255, 0.4);
+  border-color: rgba(22, 150, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.tab-btn:hover {
+  background: linear-gradient(135deg, #1696ff 0%, #0f3460 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(22, 150, 255, 0.3);
+  border-color: rgba(22, 150, 255, 0.5);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Dashboard Headings */
+.dashboard-card h2 {
+  color: #0a1e2e;
+  font-size: 24px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #1696ff 0%, #0f3460 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-card h3 {
+  color: #0a1e2e;
+  font-size: 18px;
   margin-top: 20px;
-  padding: 15px;
-  background: #fafafa;
-  border-left: 6px solid var(--danger);
+  margin-bottom: 10px;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(22, 150, 255, 0.3);
+  padding-bottom: 8px;
 }
 
-.risk-result {
-  animation: fadeIn 0.4s ease-in;
+.dashboard-card label {
+  display: block;
+  font-weight: 600;
+  color: #0a1e2e;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.form-group {
+  margin-bottom: 15px;
 }
