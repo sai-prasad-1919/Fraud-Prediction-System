@@ -21,13 +21,6 @@ npm start
 
 Frontend runs at `http://localhost:3000`. Backend must be running at `http://localhost:8000`.
 
-## Test Credentials
-
-```
-Admin ID: Adminsai01
-Password: Admin@123
-```
-
 ## Environment
 
 To point to a different backend, create a `.env` file in this directory:
