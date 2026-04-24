@@ -120,16 +120,39 @@ def create_case(request: CreateCaseRequest, db: Session = Depends(get_sql_db)):
     - **case_details**: Complete case information
     """
     try:
+        normalized_user_id = request.user_id.strip().upper()
+
         if request.risk_level not in [1, 2, 3]:
-            logger.warning(f"Invalid risk level {request.risk_level} for user {request.user_id}")
+            logger.warning(f"Invalid risk level {request.risk_level} for user {normalized_user_id}")
             raise HTTPException(status_code=400, detail="Risk level must be 1, 2, or 3")
+
+        # Only one active case is allowed per user at a time.
+        existing_active_case = db.query(FraudCase).filter(
+            and_(
+                FraudCase.user_id == normalized_user_id,
+                FraudCase.status.in_(["OPEN", "UNDER_INVESTIGATION"])
+            )
+        ).order_by(FraudCase.created_at.desc()).first()
+
+        if existing_active_case:
+            logger.warning(
+                f"Duplicate active case blocked for user {normalized_user_id}. "
+                f"Existing case #{existing_active_case.id} ({existing_active_case.status})"
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Active case already exists for {normalized_user_id}: "
+                    f"case #{existing_active_case.id} ({existing_active_case.status})"
+                )
+            )
         
-        logger.info(f"Creating fraud case for user {request.user_id} (Level {request.risk_level}) by admin {request.admin_id}")
+        logger.info(f"Creating fraud case for user {normalized_user_id} (Level {request.risk_level}) by admin {request.admin_id}")
         
         recommended_action = get_recommended_action(request.risk_level)
         
         case = FraudCase(
-            user_id=request.user_id,
+            user_id=normalized_user_id,
             risk_level=request.risk_level,
             recommended_action=recommended_action,
             status="OPEN",
@@ -139,7 +162,7 @@ def create_case(request: CreateCaseRequest, db: Session = Depends(get_sql_db)):
         db.commit()
         db.refresh(case)
         
-        logger.info(f"Fraud case {case.id} created successfully for user {request.user_id}")
+        logger.info(f"Fraud case {case.id} created successfully for user {normalized_user_id}")
         
         return {
             "status": "case created",
@@ -155,7 +178,7 @@ def create_case(request: CreateCaseRequest, db: Session = Depends(get_sql_db)):
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"Error creating case for user {request.user_id}: {str(e)}")
+        logger.error(f"Error creating case for user {normalized_user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating case: {str(e)}")
 
 
