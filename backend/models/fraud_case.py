@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text
-from datetime import datetime
+from datetime import datetime, timezone
 from models.base import Base
 
 
@@ -18,6 +18,6 @@ class FraudCase(Base):
     resolution_reason = Column(Text, nullable=True)  # Why it was resolved
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)  # When case was opened
-    investigation_started_at = Column(DateTime, nullable=True)  # When investigation began
-    resolved_at = Column(DateTime, nullable=True)  # When case was resolved
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))  # When case was opened
+    investigation_started_at = Column(DateTime(timezone=True), nullable=True)  # When investigation began
+    resolved_at = Column(DateTime(timezone=True), nullable=True)  # When case was resolved

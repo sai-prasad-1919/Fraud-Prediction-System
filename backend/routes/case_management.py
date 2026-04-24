@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, update
-from datetime import datetime
+from datetime import datetime, timezone
 
 from db.sql import get_sql_db
 from models.fraud_case import FraudCase
@@ -214,7 +214,7 @@ def start_investigation(case_id: int, request: StartInvestigationRequest, db: Se
             raise HTTPException(status_code=400, detail=f"Case must be in OPEN status to start investigation")
         
         case.status = "UNDER_INVESTIGATION"
-        case.investigation_started_at = datetime.utcnow()
+        case.investigation_started_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(case)
         
@@ -274,7 +274,7 @@ def resolve_case(case_id: int, request: ResolveCaseRequest, db: Session = Depend
         case.status = "RESOLVED"
         case.resolved_by_admin_id = request.admin_id
         case.resolution_reason = request.resolution_reason
-        case.resolved_at = datetime.utcnow()
+        case.resolved_at = datetime.now(timezone.utc)
         
         db.commit()
         
