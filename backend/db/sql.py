@@ -69,5 +69,52 @@ from models.base import Base
 from models.transaction import Transaction
 from models.fraud_case import FraudCase
 
+
+def ensure_fraud_case_timezone_columns():
+    """
+    Normalize fraud case timestamp columns to TIMESTAMP WITH TIME ZONE.
+    Existing naive values are treated as UTC while converting.
+    """
+    try:
+        with engine.begin() as conn:
+            table_exists = conn.execute(text("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = 'fraud_cases'
+                )
+            """)).scalar()
+
+            if not table_exists:
+                return
+
+            timestamp_columns = ["created_at", "investigation_started_at", "resolved_at"]
+
+            for column_name in timestamp_columns:
+                data_type = conn.execute(
+                    text("""
+                        SELECT data_type
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public'
+                          AND table_name = 'fraud_cases'
+                          AND column_name = :column_name
+                    """),
+                    {"column_name": column_name},
+                ).scalar()
+
+                if data_type == "timestamp without time zone":
+                    conn.execute(
+                        text(f"""
+                            ALTER TABLE fraud_cases
+                            ALTER COLUMN {column_name}
+                            TYPE TIMESTAMP WITH TIME ZONE
+                            USING {column_name} AT TIME ZONE 'UTC'
+                        """)
+                    )
+                    logger.info(f"Converted fraud_cases.{column_name} to TIMESTAMP WITH TIME ZONE")
+    except Exception as e:
+        logger.warning(f"Could not normalize fraud_cases timestamp columns: {str(e)}")
+
 def create_tables():
     Base.metadata.create_all(bind=engine)
+    ensure_fraud_case_timezone_columns()

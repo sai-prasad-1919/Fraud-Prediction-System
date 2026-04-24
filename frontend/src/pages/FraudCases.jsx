@@ -168,6 +168,18 @@ const FraudCases = () => {
 
   const caseCounts = getCaseCountsByStatus();
 
+  const parseApiDate = (dateStr) => {
+    if (!dateStr || typeof dateStr !== "string") return null;
+
+    // Backend sends UTC timestamps without timezone suffix (e.g. 2026-04-22T04:36:00).
+    // Append Z so browser parses it as UTC and converts correctly to local time.
+    const hasTimezone = /([zZ]|[+\-]\d{2}:\d{2})$/.test(dateStr);
+    const normalized = hasTimezone ? dateStr : `${dateStr}Z`;
+    const parsedDate = new Date(normalized);
+
+    return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+  };
+
   // ============ FILTERING & SORTING ============
   const getFilteredAndSortedCases = () => {
     let filtered = [...cases];
@@ -186,7 +198,9 @@ const FraudCases = () => {
     // Sort
     filtered.sort((a, b) => {
       if (sortBy === "created_at") {
-        return new Date(b.created_at) - new Date(a.created_at);
+        const firstDate = parseApiDate(a.created_at);
+        const secondDate = parseApiDate(b.created_at);
+        return (secondDate?.getTime() || 0) - (firstDate?.getTime() || 0);
       } else if (sortBy === "risk_level") {
         return b.risk_level - a.risk_level;
       } else if (sortBy === "user_id") {
@@ -218,7 +232,8 @@ const FraudCases = () => {
 
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "N/A";
-    const date = new Date(dateStr);
+    const date = parseApiDate(dateStr);
+    if (!date) return "N/A";
     return date.toLocaleDateString("en-IN") + " " + date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
   };
 
