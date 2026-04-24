@@ -35,6 +35,9 @@ const Dashboard = () => {
   const [actionCaseData, setActionCaseData] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Active case cache to prevent duplicate case creation for same user
+  const [activeCasesByUser, setActiveCasesByUser] = useState({});
+
   // 🔐 HARD SECURITY CHECK
   useEffect(() => {
     const isAuth = localStorage.getItem("isAdminLoggedIn");
@@ -42,6 +45,42 @@ const Dashboard = () => {
       navigate("/login", { replace: true });
     }
   }, [navigate]);
+
+  const buildActiveCasesByUser = (cases = []) => {
+    const activeMap = {};
+
+    cases.forEach((caseItem) => {
+      const userKey = caseItem?.user_id;
+      if (!userKey) return;
+
+      // Keep the latest case if duplicates already exist.
+      const existingCase = activeMap[userKey];
+      if (!existingCase || (caseItem.id || 0) > (existingCase.id || 0)) {
+        activeMap[userKey] = caseItem;
+      }
+    });
+
+    return activeMap;
+  };
+
+  const fetchActiveCases = async () => {
+    try {
+      const response = await api.get("/admin/cases/list/open");
+      const openCases = response.data?.cases || [];
+      setActiveCasesByUser(buildActiveCasesByUser(openCases));
+    } catch (err) {
+      console.error("Error fetching active cases:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveCases();
+  }, []);
+
+  const getActiveCaseForUser = (caseUserId) => {
+    if (!caseUserId) return null;
+    return activeCasesByUser[caseUserId] || null;
+  };
 
   // ============ INDIVIDUAL USER PREDICTION ============
   const predict = async () => {
@@ -78,6 +117,7 @@ const Dashboard = () => {
           action: "All transactions are fine for this user",
           txnCount: 0,
           isGenuine: true,
+          userId: userIdFormatted,
         });
         setLoading(false);
         return;
@@ -116,6 +156,7 @@ const Dashboard = () => {
         txnCount: riskData.window_txn_count,
         transactions: riskData.sample_transactions || [],
         riskLevelNum: riskLevel,
+        userId: riskData.user_id || userIdFormatted,
       });
     } catch (err) {
       console.error("Prediction error:", err);
@@ -246,6 +287,16 @@ const Dashboard = () => {
       return;
     }
 
+    const existingActiveCase = getActiveCaseForUser(actionCaseData.user_id);
+    if (existingActiveCase) {
+      alert(
+        `Active case #${existingActiveCase.id} (${existingActiveCase.status}) already exists for ${actionCaseData.user_id}. Resolve it before creating a new case.`
+      );
+      setShowActionModal(false);
+      setActionCaseData(null);
+      return;
+    }
+
     setActionLoading(true);
     try {
       const payload = {
@@ -264,15 +315,24 @@ const Dashboard = () => {
         // Clear the prediction
         setRisk(null);
         setUserId("");
+        fetchActiveCases();
       }
     } catch (err) {
       console.error("Error creating case:", err);
       const errorMsg = err.response?.data?.detail || "Failed to create case";
       alert(`Error: ${errorMsg}`);
+
+      if (typeof errorMsg === "string" && errorMsg.toLowerCase().includes("already exists")) {
+        fetchActiveCases();
+        setShowActionModal(false);
+        setActionCaseData(null);
+      }
     } finally {
       setActionLoading(false);
     }
   };
+
+  const activeCaseForIndividualUser = risk?.userId ? getActiveCaseForUser(risk.userId) : null;
 
   return (
     <>
@@ -382,18 +442,33 @@ const Dashboard = () => {
                       >
                         📋 View Transactions
                       </button>
-                      <button
-                        style={styles.actionBtn}
-                        onClick={() =>
-                          handleTakeAction({
-                            user_id: `USER${userId.padStart(4, "0")}`,
-                            risk_level: risk.riskLevelNum,
-                          })
-                        }
-                      >
-                        ⚡ Take Action
-                      </button>
+                      {activeCaseForIndividualUser ? (
+                        <button
+                          style={styles.disabledActionBtn}
+                          disabled={true}
+                          title={`Active case #${activeCaseForIndividualUser.id} (${activeCaseForIndividualUser.status}) already exists`}
+                        >
+                          ⛔ Active Case
+                        </button>
+                      ) : (
+                        <button
+                          style={styles.actionBtn}
+                          onClick={() =>
+                            handleTakeAction({
+                              user_id: `USER${userId.padStart(4, "0")}`,
+                              risk_level: risk.riskLevelNum,
+                            })
+                          }
+                        >
+                          ⚡ Take Action
+                        </button>
+                      )}
                     </div>
+                    {activeCaseForIndividualUser && (
+                      <p style={styles.activeCaseNote}>
+                        Case #{activeCaseForIndividualUser.id} is already {activeCaseForIndividualUser.status}. Resolve that case before creating a new one.
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -487,7 +562,10 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredResults.map((user, idx) => (
+                    {filteredResults.map((user, idx) => {
+                      const activeCaseForUser = getActiveCaseForUser(user.user_id);
+
+                      return (
                       <tr key={idx} style={{...styles.tableRow, animationDelay: `${idx * 0.05}s`}} className="table-row-animated">
                         <td style={styles.td}>{user.user_id}</td>
                         <td style={styles.td}>
@@ -514,19 +592,27 @@ const Dashboard = () => {
                         <td style={styles.td}>
                           <button
                             className="dashboard-action-btn-small"
-                            style={styles.actionBtn}
+                            style={activeCaseForUser ? styles.disabledActionBtn : styles.actionBtn}
                             onClick={() =>
+                              !activeCaseForUser &&
                               handleTakeAction({
                                 user_id: user.user_id,
                                 risk_level: user.risk_level,
                               })
                             }
+                            disabled={Boolean(activeCaseForUser)}
+                            title={
+                              activeCaseForUser
+                                ? `Active case #${activeCaseForUser.id} (${activeCaseForUser.status}) already exists`
+                                : "Create fraud case"
+                            }
                           >
-                            ⚡
+                            {activeCaseForUser ? "⛔" : "⚡"}
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
                 </div>
@@ -937,10 +1023,27 @@ const styles = {
     position: "relative",
     overflow: "hidden",
   },
+  disabledActionBtn: {
+    padding: "6px 12px",
+    background: "#9e9e9e",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "not-allowed",
+    fontSize: "12px",
+    fontWeight: "bold",
+    boxShadow: "none",
+  },
   buttonRow: {
     display: "flex",
     gap: "10px",
     marginTop: "20px",
+  },
+  activeCaseNote: {
+    marginTop: "12px",
+    color: "#d32f2f",
+    fontSize: "13px",
+    fontWeight: "600",
   },
   secondaryBtn: {
     flex: 1,
