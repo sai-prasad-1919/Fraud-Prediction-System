@@ -22,13 +22,21 @@ class AdminRegister(BaseModel):
         description="Admin password (minimum 6 characters)",
         example="SecurePass123"
     )
+    admin_id: str = Field(
+        ...,
+        min_length=5,
+        max_length=50,
+        description="Admin ID for authentication",
+        example="Adminsai01"
+    )
     
     model_config = {
         "json_schema_extra": {
             "example": {
                 "name": "Sai Prasad",
                 "email": "admin@frauddetect.com",
-                "password": "SecurePass123"
+                "password": "SecurePass123",
+                "admin_id": "Adminsai01"
             }
         }
     }
@@ -48,6 +56,19 @@ class AdminRegister(BaseModel):
         if '@' not in v or '.' not in v:
             raise ValueError("Invalid email format")
         return v.lower().strip()
+
+    @field_validator('admin_id')
+    @classmethod
+    def validate_admin_id(cls, v):
+        """Validate admin ID format and length"""
+        normalized = v.strip()
+        if not normalized:
+            raise ValueError("Admin ID cannot be empty")
+
+        if len(normalized) < 5 or len(normalized) > 50:
+            raise ValueError("Admin ID must be between 5 and 50 characters")
+
+        return normalized
 
 
 class AdminLogin(BaseModel):

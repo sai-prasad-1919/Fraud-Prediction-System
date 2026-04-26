@@ -1,0 +1,163 @@
+RENDER DEPLOYMENT GUIDE (FASTAPI + ML MODEL)
+Project: Fraud-Predict backend
+
+This guide deploys the backend API and ML inference model on Render.
+
+--------------------------------------------------
+1) PRE-DEPLOY CHECKLIST
+--------------------------------------------------
+
+Before deploying, confirm these files exist in backend/:
+
+- app.py
+- requirements.txt
+- ml/models/xgboost/model.pkl
+- ml/models/xgboost/feature_list.json
+
+Why this matters:
+The API loads the ML model from ml/models/xgboost at runtime. If model.pkl is missing,
+the app will fail during startup.
+
+--------------------------------------------------
+2) RECOMMENDED REQUIREMENTS FOR PRODUCTION
+--------------------------------------------------
+
+Your current requirements are deployable on Render, but for faster builds you can remove
+test-only packages from production installs:
+
+- pytest
+- pytest-cov
+
+Optional approach:
+- keep requirements.txt for local development
+- create requirements-prod.txt for Render
+
+If you keep one file only, deployment still works.
+
+--------------------------------------------------
+3) CREATE RENDER WEB SERVICE
+--------------------------------------------------
+
+1. Push your code to GitHub.
+2. In Render dashboard: New -> Web Service.
+3. Connect your GitHub repository.
+4. Configure service:
+
+   Name: fraud-predict-backend (or any name)
+   Runtime: Python 3
+   Root Directory: backend
+   Build Command: pip install --upgrade pip && pip install -r requirements.txt
+   Start Command: uvicorn app:app --host 0.0.0.0 --port $PORT
+
+5. Instance Type:
+   Choose a plan with enough memory for Python + pandas + xgboost runtime.
+   512MB is often too tight; 1GB+ is safer for ML APIs.
+
+--------------------------------------------------
+4) ADD REQUIRED ENVIRONMENT VARIABLES IN RENDER
+--------------------------------------------------
+
+Set these in Render -> Environment:
+
+APP_NAME=Fraud Risk Backend
+APP_ENV=production
+SQL_DB_URL=<your_postgresql_connection_string>
+MONGO_URL=<your_mongodb_connection_string>
+JWT_SECRET_KEY=<strong_random_secret>
+ML_WINDOW_SIZE=7
+
+Important:
+Use SQL_DB_URL exactly (not DATABASE_URL), because code reads SQL_DB_URL.
+
+--------------------------------------------------
+5) DATABASE OPTIONS
+--------------------------------------------------
+
+PostgreSQL:
+- Use Render PostgreSQL or external hosted PostgreSQL.
+
+MongoDB:
+- Use MongoDB Atlas or another hosted MongoDB.
+
+Do not use localhost URLs in production.
+
+--------------------------------------------------
+6) VERIFY DEPLOYMENT
+--------------------------------------------------
+
+After deploy finishes, test:
+
+- GET /
+- GET /docs
+- GET /test-sql
+- GET /test-mongo
+
+If all pass, test prediction endpoints.
+
+--------------------------------------------------
+7) COMMON BUILD/STARTUP ISSUES AND FIXES
+--------------------------------------------------
+
+Issue: Build fails on heavy ML dependencies.
+Fix:
+- Ensure Python version is 3.10 or 3.11 in Render settings.
+- Rebuild so pip can use prebuilt wheels for numpy/pandas/scikit-learn/xgboost.
+
+Issue: App starts but prediction fails.
+Fix:
+- Confirm model file exists in deployed code:
+  backend/ml/models/xgboost/model.pkl
+- Confirm feature list file exists:
+  backend/ml/models/xgboost/feature_list.json
+
+Issue: SQL connection fails.
+Fix:
+- Verify SQL_DB_URL value.
+- Confirm DB network access allows Render service.
+
+Issue: Mongo connection fails.
+Fix:
+- Verify MONGO_URL value.
+- If using Atlas, allow Render egress or use broad allowlist carefully.
+
+--------------------------------------------------
+8) OPTIONAL: render.yaml (INFRA AS CODE)
+--------------------------------------------------
+
+If you want fully reproducible setup, add this file at repository root:
+
+services:
+  - type: web
+    name: fraud-predict-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_NAME
+        value: Fraud Risk Backend
+      - key: SQL_DB_URL
+        sync: false
+      - key: MONGO_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: ML_WINDOW_SIZE
+        value: "7"
+
+sync: false means set secure secrets in Render dashboard.
+
+--------------------------------------------------
+9) FINAL PRODUCTION CHECK
+--------------------------------------------------
+
+- Health endpoint returns success.
+- Model loads without startup crash.
+- SQL and Mongo test endpoints work.
+- Admin login works.
+- Prediction endpoint returns responses.
+- Logs show no repeated retry failures for databases.
+
+Deployment is complete after these checks pass.

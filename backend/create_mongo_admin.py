@@ -10,9 +10,10 @@ If --admin-id is omitted, one is auto-generated from the name.
 from __future__ import annotations
 
 import argparse
-import re
 from datetime import datetime
 from getpass import getpass
+
+from utils.admin_utils import build_default_admin_id, ensure_unique_admin_id
 
 
 def get_admin_collection():
@@ -33,36 +34,6 @@ def normalize_email(email: str) -> str:
     if "@" not in email or "." not in email:
         raise ValueError("Invalid email format")
     return email
-
-
-def build_default_admin_id(name: str) -> str:
-    """Build default admin_id in style: Admin<name>01."""
-    cleaned = re.sub(r"[^a-zA-Z]", "", name).lower()
-    if not cleaned:
-        cleaned = "user"
-    return f"Admin{cleaned}01"
-
-
-def ensure_unique_admin_id(base_admin_id: str) -> str:
-    """Ensure admin_id uniqueness by incrementing numeric suffix when needed."""
-    admin_collection = get_admin_collection()
-
-    if admin_collection.find_one({"admin_id": base_admin_id}) is None:
-        return base_admin_id
-
-    prefix_match = re.match(r"^(.*?)(\d+)$", base_admin_id)
-    if prefix_match:
-        prefix = prefix_match.group(1)
-        counter = int(prefix_match.group(2))
-    else:
-        prefix = f"{base_admin_id}"
-        counter = 1
-
-    while True:
-        counter += 1
-        candidate = f"{prefix}{counter:02d}"
-        if admin_collection.find_one({"admin_id": candidate}) is None:
-            return candidate
 
 
 def create_admin_document(
