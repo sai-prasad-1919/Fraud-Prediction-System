@@ -49,7 +49,8 @@ class TestAdminRegisterSchema:
         register = AdminRegister(
             name="Sai Prasad",
             email="admin@frauddetect.com",
-            password="SecurePass123"
+            password="SecurePass123",
+            admin_id="Adminsai01"
         )
         assert register.name == "Sai Prasad"
         assert register.email == "admin@frauddetect.com"
@@ -59,7 +60,8 @@ class TestAdminRegisterSchema:
         register = AdminRegister(
             name="  John Doe  ",
             email="john@example.com",
-            password="password123"
+            password="password123",
+            admin_id="Adminjohn01"
         )
         assert register.name == "John Doe"
     
@@ -68,7 +70,8 @@ class TestAdminRegisterSchema:
         register = AdminRegister(
             name="John",
             email="JOHN@EXAMPLE.COM",
-            password="password123"
+            password="password123",
+            admin_id="Adminjohn02"
         )
         assert register.email == "john@example.com"
     
@@ -78,7 +81,8 @@ class TestAdminRegisterSchema:
             AdminRegister(
                 name="J",  # Too short
                 email="john@example.com",
-                password="password123"
+                password="password123",
+                admin_id="Adminjohn03"
             )
     
     def test_registration_name_max_length(self):
@@ -87,7 +91,8 @@ class TestAdminRegisterSchema:
             AdminRegister(
                 name="A" * 101,  # Too long
                 email="john@example.com",
-                password="password123"
+                password="password123",
+                admin_id="Adminjohn04"
             )
     
     def test_registration_name_no_special_chars(self):
@@ -96,7 +101,8 @@ class TestAdminRegisterSchema:
             AdminRegister(
                 name="John@Doe",  # Contains special char
                 email="john@example.com",
-                password="password123"
+                password="password123",
+                admin_id="Adminjohn05"
             )
     
     def test_registration_invalid_email_format(self):
@@ -105,7 +111,8 @@ class TestAdminRegisterSchema:
             AdminRegister(
                 name="John Doe",
                 email="invalidemail",  # Missing @ and domain
-                password="password123"
+                password="password123",
+                admin_id="Adminjohn06"
             )
     
     def test_registration_password_min_length(self):
@@ -114,13 +121,23 @@ class TestAdminRegisterSchema:
             AdminRegister(
                 name="John Doe",
                 email="john@example.com",
-                password="pass"  # Too short
+                password="pass",  # Too short
+                admin_id="Adminjohn07"
             )
     
     def test_registration_required_fields(self):
         """Test that all fields are required"""
         with pytest.raises(ValidationError):
             AdminRegister(name="John Doe")  # Missing email and password
+
+    def test_registration_admin_id_required(self):
+        """Test that admin ID is required for registration"""
+        with pytest.raises(ValidationError):
+            AdminRegister(
+                name="John Doe",
+                email="john@example.com",
+                password="password123"
+            )
 
 
 class TestUserIdFormat:

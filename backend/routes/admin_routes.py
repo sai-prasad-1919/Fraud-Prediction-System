@@ -17,22 +17,23 @@ router = APIRouter(
 @router.post(
     "/register",
     summary="Register a new admin",
-    description="Create a new admin account with email and password",
-    response_description="Admin registration response with admin ID and token",
+    description="Create a new admin account with name, email, password, and admin_id",
+    response_description="Admin registration response with admin ID and JWT token",
 )
 def register(data: AdminRegister):
     """
     Register a new admin user.
     
     **Request Body:**
+    - **name**: Admin full name
     - **email**: Admin email address
-    - **password**: Admin password (min 8 characters)
-    - **full_name**: Admin full name
+    - **password**: Admin password (min 6 characters)
+    - **admin_id**: Admin ID used for login
     
     **Returns:**
     - admin_id: Unique admin identifier
-    - email: Admin email
-    - token: JWT authentication token
+    - access_token: JWT authentication token
+    - token_type: Token type (bearer)
     """
     try:
         logger.info(f"Admin registration attempt for email: {data.email}")
