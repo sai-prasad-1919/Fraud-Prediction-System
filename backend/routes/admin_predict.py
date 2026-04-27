@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from sqlalchemy.orm import Session
 
 from db.sql import get_sql_db
@@ -35,10 +35,25 @@ class PredictRequest(BaseModel):
         """Validate user ID format"""
         if not isinstance(v, str):
             raise ValueError("User ID must be a string")
-        if len(v) == 0:
+        if len(v.strip()) == 0:
             raise ValueError("User ID cannot be empty")
-        # Allow USER0001 format or just the number
-        return v
+
+        normalized = v.strip().upper()
+
+        # Accept either "123" or "USER0123" and normalize to USER####.
+        if normalized.isdigit():
+            return f"USER{int(normalized):04d}"
+
+        if normalized.startswith("USER") and normalized[4:].isdigit():
+            return f"USER{int(normalized[4:]):04d}"
+
+        raise ValueError("User ID must be numeric (e.g., '123') or USER format (e.g., 'USER0123')")
+
+    @model_validator(mode="after")
+    def validate_user_id_range(self):
+        if self.start_user_id > self.end_user_id:
+            raise ValueError("start_user_id must be less than or equal to end_user_id")
+        return self
 
 
 @router.post(
@@ -77,6 +92,9 @@ def predict_users(
         result = predict_user_range(db, request.start_user_id, request.end_user_id)
         logger.info(f"Prediction returned with {sum(len(v) for v in result.values())} risky users")
         return result
+    except ValueError as e:
+        logger.warning(f"Prediction validation/data warning: {str(e)}")
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Prediction error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
