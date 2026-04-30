@@ -10,13 +10,12 @@ class Settings:
     SQL_DB_URL = os.getenv("SQL_DB_URL")
     MONGO_URL = os.getenv("MONGO_URL")
 
-    # Debug environment variable
-    console.log("REACT_APP_API_URL =", process.env.REACT_APP_API_URL);
+   # Debug environment variable
+    print("REACT_APP_API_URL =", os.getenv("REACT_APP_API_URL"))
     
     # API Configuration
-    export const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
-
-    console.log("API_BASE_URL =", API_BASE_URL);
+    API_BASE_URL = os.getenv("REACT_APP_API_URL", "http://localhost:8000")
+    print("API_BASE_URL =", API_BASE_URL)
     
     # ML Configuration
     # Number of previous transactions to use for fraud prediction window
